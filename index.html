@@ -261,8 +261,8 @@
         this.isAnimating = true;
         
         let iterations = 0;
-        const maxIterations = 10;
-        const speed = 50;
+        const maxIterations = 15;
+        const speed = 100;
         
         this.intervalId = setInterval(() => {
           this.element.innerHTML = this.originalText
@@ -304,7 +304,6 @@
 
     // Initialize scramble for all links
     document.addEventListener('DOMContentLoaded', () => {
-  // Animation code from above goes here
   // Animate on scroll into view
 const observerOptions = {
   threshold: 0.5,
