@@ -10,7 +10,9 @@
     <meta name="twitter:site" content="@0atxl" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="canonical" href="https://atulk.me" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
       <style>
         text { 
           fill: %23000; 
@@ -22,7 +24,8 @@
         }
       </style>
       <text y='75' x='50' text-anchor='middle' font-size='70'>ΑΩ</text>
-    </svg>">
+    </svg>"
+    />
     <style>
       body {
         line-height: 1.4;
@@ -166,12 +169,49 @@
           text-align: left;
         }
       }
+
+      @media (pointer: fine) {
+        html,
+        a,
+        button {
+          cursor: none !important; /* Hides the default arrow */
+        }
+
+        #touch-cursor {
+          width: 18px;
+          height: 18px;
+          background-color: rgba(150, 150, 150, 0.15);
+          border: 1px solid rgba(125, 125, 125, 0.4);
+          border-radius: 50%;
+          position: fixed;
+          pointer-events: none; /* Let's you click through it */
+          top: 0;
+          left: 0;
+          z-index: 9999;
+          backdrop-filter: blur(0.5px) saturate(180%) brightness(1.1);
+          -webkit-backdrop-filter: blur(0.5px) saturate(180%) brightness(1.1);
+          transition:
+            transform 0.05s linear,
+            background-color 0.2s;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          will-change: transform;
+        }
+
+        /* Dark mode adjustment for the cursor */
+        body.dark-mode #touch-cursor {
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background-color: rgba(150, 150, 150, 0.1);
+          backdrop-filter: blur(1.5px) saturate(200%) brightness(0.8);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+      }
     </style>
 
     <title>Atul Kumar</title>
   </head>
 
   <body>
+    <div id="touch-cursor"></div>
     <div id="maincontent">
       <div class="header">
         <h2>Atul Kumar</h2>
@@ -427,11 +467,31 @@
           observer.observe(el);
         });
       });
+
+
       document.addEventListener("keydown", (e) => {
         if (e.key === "d" && e.ctrlKey) {
           e.preventDefault();
           toggleTheme();
         }
+      });
+      const touchCursor = document.getElementById("touch-cursor");
+      let scale = 1; // Permanent slight "Lens" scale
+
+      document.addEventListener("mousemove", (e) => {
+        requestAnimationFrame(() => {
+          touchCursor.style.transform = `translate3d(${e.clientX - 9}px, ${e.clientY - 9}px, 0) scale(${scale})`;
+        });
+      });
+
+      document.addEventListener("mousedown", () => {
+        scale = 1.3; // Slight "press" effect
+        touchCursor.style.backgroundColor = "rgba(150, 150, 150, 0.3)";
+      });
+
+      document.addEventListener("mouseup", () => {
+        scale = 1.0; // Return to lens state
+        touchCursor.style.backgroundColor = "rgba(150, 150, 150, 0.15)";
       });
     </script>
   </body>
