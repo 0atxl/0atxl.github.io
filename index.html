@@ -1,332 +1,437 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="description" content="intro for atul k"/>
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:site" content="@0atxl" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="canonical" href="https://atulk.me" />
-  
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Atul Kumar - CS student building AI tools, ML systems, and automation. Projects: Neosis, 0xbin, TrialSync. Python, C++, TypeScript."
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@0atxl" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="canonical" href="https://atulk.me" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
   <style>
-    body { 
-      line-height: 1.4;
-      font-size: 16px;
-      padding: 0 20px;
-      margin: 50px auto;
-      max-width: 670px;
-      transition: background-color 0.3s, color 0.3s;
+    text { fill: black; font-family: serif; font-weight: bold; }
+    @media (prefers-color-scheme: dark) {
+      text { fill: white; }
     }
+  </style>
+  <text y='0.85em' x='50%' text-anchor='middle' font-size='80'>ΑΩ</text>
+</svg>"
+    />
+    <style>
+      body {
+        line-height: 1.4;
+        font-size: 16px;
+        padding: 0 20px;
+        margin: 50px auto;
+        max-width: 650px;
+        transition:
+          background-color 0.3s,
+          color 0.3s;
+      }
 
-    body.dark-mode {
-      background: #1a1a1a;
-      color: #e0e0e0;
-    }
+      body.dark-mode {
+        background: #0f0f0f;
+        color: #d0d0d0;
+      }
 
-    #maincontent {
-      max-width: 42em;
-      margin: 15px auto;
-      padding-top: 25px;
-    }
+      #maincontent {
+        max-width: 42em;
+        margin: 15px auto;
+        padding-top: 25px;
+      }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-    }
-
-    .header h2 {
-      margin: 0;
-      line-height: 1;
-    }
-
-    .top-links {
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      text-align: right;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .top-links a {
-      color: #000;
-      text-decoration: none;
-    }
-
-    body.dark-mode .top-links a {
-      color: #fff;
-    }
-
-    .links {
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      font-size: 14px;
-      margin: 15px 0;
-      font-family: 'Courier New', monospace;
-      justify-content: center;
-    }
-
-    .links a {
-      color: #000;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    body.dark-mode .links a {
-      color: #fff;
-    }
-
-    .red-char {
-      color: #E15858;
-    }
-
-    .theme-toggle {
-      cursor: pointer;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      background: none;
-      border: none;
-      padding: 0;
-      color: #000;
-    }
-
-    body.dark-mode .theme-toggle {
-      color: #fff;
-    }
-
-    .footer {
-      margin-top: 50px;
-      font-size: 14px;
-      color: #666;
-      text-align: right;
-    }
-
-    body.dark-mode .footer {
-      color: #999;
-    }
-
-    a {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    a:hover {
-        text-decoration: none;
-    }
-
-    
-    @media (max-width: 600px) {
       .header {
-        flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+      }
+
+      .header h2 {
+        margin: 0;
+        line-height: 1.2;
       }
 
       .top-links {
-        text-align: left;
-        margin-top: 10px;
-        gap: 10px;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        text-align: right;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .top-links a {
+        color: #000;
+        text-decoration: none;
+      }
+
+      body.dark-mode .top-links a {
+        color: #fff;
       }
 
       .links {
-        justify-content: flex-start;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 14px;
+        margin: 15px 0;
+        font-family: "Courier New", monospace;
+        justify-content: center;
+      }
+
+      .links a {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      body.dark-mode .links a {
+        color: #fff;
+      }
+
+      .red-char {
+        color: #e15858;
+      }
+
+      .theme-toggle {
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        background: none;
+        border: none;
+        padding: 0;
+        color: #000;
+        margin-left: 15px;
+        padding: 2px 0;
+      }
+
+      body.dark-mode .theme-toggle {
+        color: #fff;
       }
 
       .footer {
-        text-align: left;
+        margin-top: 50px;
+        font-size: 14px;
+        color: #666;
+        text-align: right;
       }
-      
-    }
-  </style>
-  
-  <title>Atul Kumar</title>
-</head>
 
-<body>
-  <div id="maincontent">
-    <div class="header">
-      <h2>Atul Kumar</h2>
-      <div class="top-links">
-        <a href="https://linkedin.com/in/0atxl" data-scramble="LinkedIn" target="_blank" rel="noopener noreferrer">LinkedIn</a>
-        <a href="https://x.com/0atxl" data-scramble="X"  target="_blank" rel="noopener noreferrer">X</a>
-        <a href="https://github.com/0atxl" data-scramble="GitHub"  target="_blank" rel="noopener noreferrer">GitHub</a>
-        <a href="mailto:0atxlk@gmail.com" data-scramble="Email">Email</a>
-        <button class="theme-toggle" onclick="toggleTheme()">[ ○ ]</button>
+      body.dark-mode .footer {
+        color: #999;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: none;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      a:not([data-scramble]):hover {
+        text-decoration: underline;
+        opacity: 0.8;
+      }
+
+      @media (max-width: 600px) {
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .top-links {
+          text-align: left;
+          margin-top: 10px;
+          gap: 10px;
+        }
+
+        .links {
+          justify-content: flex-start;
+        }
+
+        .footer {
+          text-align: left;
+        }
+      }
+    </style>
+
+    <title>Atul Kumar</title>
+  </head>
+
+  <body>
+    <div id="maincontent">
+      <div class="header">
+        <h2>Atul Kumar</h2>
+        <div class="top-links">
+          <a
+            href="https://linkedin.com/in/0atxl"
+            data-scramble="LinkedIn"
+            target="_blank"
+            rel="noopener noreferrer"
+            >LinkedIn</a
+          >
+          <a
+            href="https://x.com/0atxl"
+            data-scramble="X"
+            target="_blank"
+            rel="noopener noreferrer"
+            >X</a
+          >
+          <a
+            href="https://github.com/0atxl"
+            data-scramble="GitHub"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub</a
+          >
+          <a href="mailto:0atxlk@gmail.com" data-scramble="Email">Email</a>
+          <button class="theme-toggle" onclick="toggleTheme()">[ ○ ]</button>
+        </div>
+      </div>
+
+      <p>
+        I'm a CS undergrad building at the intersection of systems, AI, and
+        automation. I focus on turning research and mathematical thinking into
+        performant developer tools and practical software.
+      </p>
+
+      Some things about me:
+
+      <ul>
+        <li>Currently based in Vadodara. Grew up in Rourkela, India.</li>
+        <li>Third-year Computer Science engineering student.</li>
+        <li>Interested in AI, systems, and applied mathematics.</li>
+        <li>Regularly read research papers and try to implement ideas.</li>
+        <li>Enjoy building small automation tools in Python.</li>
+        <li>
+          Comfortable across web development, DevOps, DSA, and system design.
+        </li>
+        <li>Fast learner and enjoy helping others.</li>
+      </ul>
+
+      Some things I believe:
+
+      <ul>
+        <li>
+          Building is the fastest way to truly understand ideas and learn new
+          stuff.
+        </li>
+        <li>
+          Strong fundamentals in math and systems matter more than short-term
+          trends.
+        </li>
+        <li>Automation saves mental energy for harder problems.</li>
+        <li>Research is valuable only when applied.</li>
+        <li>Small, well-made tools compound over time.</li>
+        <li>Teaching and explaining ideas reinforces learning.</li>
+      </ul>
+
+      What I'm building:
+      <ul>
+        <li>
+          Neosis — Tree-based AI conversation memory with semantic search and
+          contextual scratchpads.
+        </li>
+        <li>0xbin — Encrypted, privacy-first pastebin with CLI support.</li>
+        <li>
+          TrialSync — NLP-powered patient-trial eligibility matching system.
+        </li>
+        <li>
+          Spectre — Non-intrusive load monitoring using ML for appliance-level
+          energy analysis.
+        </li>
+        <li>
+          More automation tools and experiments on
+          <a
+            href="https://github.com/0atxl"
+            data-scramble="GitHub"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub</a
+          >.
+        </li>
+      </ul>
+
+      What I work with:
+      <ul>
+        <li>Languages: Python, C++, TypeScript, Java, GO</li>
+        <li>Built ML systems for healthcare and energy (PyTorch, NLP)</li>
+        <li>Full-stack web apps with TypeScript, React, FastAPI, PostgreSQL</li>
+        <li>Serverless tools and CLI applications (Vercel, Docker)</li>
+        <li>
+          Algorithmic problem solving — 500+ problems across competitive
+          platforms
+        </li>
+      </ul>
+      <br />
+      <div class="links">
+        <a
+          href="https://codeforces.com/profile/0atxl"
+          data-scramble="Codeforces"
+          target="_blank"
+          rel="noopener noreferrer"
+          >Codeforces</a
+        >
+        •
+        <a
+          href="https://codechef.com/users/atxl"
+          data-scramble="CodeChef"
+          target="_blank"
+          rel="noopener noreferrer"
+          >CodeChef</a
+        >
+        •
+        <a
+          href="https://leetcode.com/u/0atxl"
+          data-scramble="LeetCode"
+          target="_blank"
+          rel="noopener noreferrer"
+          >LeetCode</a
+        >
+      </div>
+
+      <div class="footer">
+        <span style="font-size: 9px; color: #999"
+          >Last updated: January 2026 • Ctrl+D for Dark Mode</span
+        >
       </div>
     </div>
 
-    <p>
-      I'm a CS undergrad building at the intersection of systems, AI, and automation.
-      I focus on turning research and mathematical thinking into performant developer tools
-      and practical software.
-    </p>
+    <script>
+      // Dark mode toggle
+      function toggleTheme() {
+        document.body.classList.toggle("dark-mode");
+        localStorage.setItem(
+          "theme",
+          document.body.classList.contains("dark-mode") ? "dark" : "light",
+        );
+        updateToggleIcon();
+      }
 
-    Some things about me:
+      function updateToggleIcon() {
+        const toggle = document.querySelector(".theme-toggle");
+        toggle.textContent = document.body.classList.contains("dark-mode")
+          ? "[ ● ]"
+          : "[ ○ ]";
+      }
 
-    <ul>
-      <li>Currently based in Vadodara. Grew up in Rourkela, India.</li>
-      <li>Third-year Computer Science engineering student.</li>
-      <li>Interested in AI, systems, and applied mathematics.</li>
-      <li>Regularly read research papers and try to implement ideas.</li>
-      <li>Enjoy building small automation tools in Python.</li>
-      <li>Comfortable across web development, DevOps, DSA, and system design.</li>
-      <li>Fast learner and enjoy helping others.</li>
-    </ul>
-
-    Some things I believe:
-
-    <ul>
-      <li>Building is the fastest way to truly understand ideas and learn new stuff.</li>
-      <li>Strong fundamentals in math and systems matter more than short-term trends.</li>
-      <li>Automation saves mental energy for harder problems.</li>
-      <li>Research is valuable only when applied.</li>
-      <li>Small, well-made tools compound over time.</li>
-      <li>Teaching and explaining ideas reinforces learning.</li>
-    </ul>
-
-    What I'm building:
-<ul>
-  <li>Neosis — Tree-based AI conversation memory with semantic search and contextual scratchpads.</li>
-  <li>0xbin — Encrypted, privacy-first pastebin with CLI support.</li>
-  <li>TrialSync — NLP-powered patient-trial eligibility matching system.</li>
-  <li>Spectre — Non-intrusive load monitoring using ML for appliance-level energy analysis.</li>
-  <li>More automation tools and experiments on <a href="https://github.com/0atxl" data-scramble="GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>.</li>
-</ul>
-
-What I work with:
-<ul>
-  <li>Languages: Python, C++, TypeScript, Java, GO</li>
-  <li>Built ML systems for healthcare and energy (PyTorch, scikit-learn, NLP)</li>
-  <li>Full-stack web apps with TypeScript, React, FastAPI, PostgreSQL</li>
-  <li>Serverless tools and CLI applications (Vercel, Docker)</li>
-  <li>Algorithmic problem solving — 500+ problems across competitive platforms</li>
-</ul>
-    <br>
-    <div class="links">
-      <a href="https://codeforces.com/profile/0atxl" data-scramble="Codeforces"  target="_blank" rel="noopener noreferrer">Codeforces</a> •
-      <a href="https://codechef.com/users/atxl" data-scramble="CodeChef"  target="_blank" rel="noopener noreferrer">CodeChef</a> •
-      <a href="https://leetcode.com/u/0atxl" data-scramble="LeetCode"  target="_blank" rel="noopener noreferrer">LeetCode</a>
-    </div>
-
-    <div class="footer">
-      Last updated: February 2026
-    </div>
-
-  </div>
-
-  <script>
-    // Dark mode toggle
-    function toggleTheme() {
-      document.body.classList.toggle('dark-mode');
-      localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+      // Load saved theme
+      if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+      }
       updateToggleIcon();
-    }
 
-    function updateToggleIcon() {
-      const toggle = document.querySelector('.theme-toggle');
-      toggle.textContent = document.body.classList.contains('dark-mode') ? '[ ● ]' : '[ ○ ]';
-    }
-
-    // Load saved theme
-    if (localStorage.getItem('theme') === 'dark') {
-      document.body.classList.add('dark-mode');
-    }
-    updateToggleIcon();
-
-    // Scramble animation
-    class ScrambleText {
-      constructor(element) {
-        this.element = element;
-        this.originalText = element.dataset.scramble || element.textContent;
-        this.chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*';
-        this.isAnimating = false;
-        this.intervalId = null;
-        
-        element.addEventListener('mouseenter', () => this.scramble());
-        element.addEventListener('mouseleave', () => this.reset());
-      }
-
-      scramble() {
-        if (this.isAnimating) return;
-
-        const rect = this.element.getBoundingClientRect();
-        this.element.style.width = `${rect.width}px`;
-        this.element.style.display = 'inline-block';
-
-        this.isAnimating = true;
-        
-        let iterations = 0;
-        const maxIterations = 15;
-        const speed = 100;
-        
-        this.intervalId = setInterval(() => {
-          this.element.innerHTML = this.originalText
-            .split('')
-            .map((char, index) => {
-              if (char === ' ') return ' ';
-              
-              if (iterations > index * 1.5) {
-                return char;
-              }
-              
-              const randomChar = this.chars[Math.floor(Math.random() * this.chars.length)];
-              const isRed = Math.random() < 0.3;
-              
-              return `<span class="${isRed ? 'red-char' : ''}">${randomChar}</span>`;
-            })
-            .join('');
-          
-          iterations++;
-          
-          if (iterations >= maxIterations) {
-            clearInterval(this.intervalId);
-            this.element.textContent = this.originalText;
-            this.isAnimating = false;
-          }
-        }, speed);
-      }
-
-      reset() {
-        if (this.intervalId) {
-          clearInterval(this.intervalId);
+      // Scramble animation
+      class ScrambleText {
+        constructor(element) {
+          this.element = element;
+          this.originalText = element.dataset.scramble || element.textContent;
+          this.chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*";
+          this.isAnimating = false;
           this.intervalId = null;
+
+          element.addEventListener("mouseenter", () => this.scramble());
+          element.addEventListener("mouseleave", () => this.reset());
         }
-        this.isAnimating = false;
-        this.element.textContent = this.originalText;
-        this.element.style.width = 'auto';
+
+        scramble() {
+          if (this.isAnimating) return;
+
+          const rect = this.element.getBoundingClientRect();
+          this.element.style.width = `${rect.width}px`;
+          this.element.style.display = "inline-block";
+
+          this.isAnimating = true;
+
+          let iterations = 0;
+          const maxIterations = 15;
+          const speed = 100;
+
+          this.intervalId = setInterval(() => {
+            this.element.innerHTML = this.originalText
+              .split("")
+              .map((char, index) => {
+                if (char === " ") return " ";
+
+                if (iterations > index * 1.5) {
+                  return char;
+                }
+
+                const randomChar =
+                  this.chars[Math.floor(Math.random() * this.chars.length)];
+                const isRed = Math.random() < 0.3;
+
+                return `<span class="${isRed ? "red-char" : ""}">${randomChar}</span>`;
+              })
+              .join("");
+
+            iterations++;
+
+            if (iterations >= maxIterations) {
+              clearInterval(this.intervalId);
+              this.element.textContent = this.originalText;
+              this.isAnimating = false;
+            }
+          }, speed);
+        }
+
+        reset() {
+          if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+          }
+          this.isAnimating = false;
+          this.element.textContent = this.originalText;
+          this.element.style.width = "auto";
+        }
       }
-    }
 
-    // Initialize scramble for all links
-    document.addEventListener('DOMContentLoaded', () => {
-  // Animate on scroll into view
-const observerOptions = {
-  threshold: 0.5,
-  rootMargin: '0px'
-};
+      // Initialize scramble for all links
+      document.addEventListener("DOMContentLoaded", () => {
+        // Animate on scroll into view
+        const observerOptions = {
+          threshold: 0.5,
+          rootMargin: "0px",
+        };
 
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting && !entry.target.dataset.hasAnimated) {
-      const scrambler = entry.target.scrambleInstance;
-      if (scrambler) {
-        scrambler.scramble();
-        entry.target.dataset.hasAnimated = 'true';
-      }
-    }
-  });
-}, observerOptions);
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !entry.target.dataset.hasAnimated) {
+              const scrambler = entry.target.scrambleInstance;
+              if (scrambler) {
+                scrambler.scramble();
+                entry.target.dataset.hasAnimated = "true";
+              }
+            }
+          });
+        }, observerOptions);
 
-// Store scramble instance and observe
-document.querySelectorAll('[data-scramble]').forEach(el => {
-  const instance = new ScrambleText(el);
-  el.scrambleInstance = instance;
-  observer.observe(el);
-});
-});
-  </script>
-</body>
+        // Store scramble instance and observe
+        document.querySelectorAll("[data-scramble]").forEach((el) => {
+          const instance = new ScrambleText(el);
+          el.scrambleInstance = instance;
+          observer.observe(el);
+        });
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "d" && e.ctrlKey) {
+          e.preventDefault();
+          toggleTheme();
+        }
+      });
+    </script>
+  </body>
 </html>
