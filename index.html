@@ -372,19 +372,6 @@
         display: inline-block;
       }
 
-      #theme-reveal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        pointer-events: none;
-        z-index: 0; /* Behind content */
-        background-color: transparent;
-        clip-path: circle(0% at 50% 50%);
-        will-change: clip-path, background-color;
-      }
-
       body.dark-mode .theme-toggle {
         color: #fff;
       }
@@ -504,6 +491,8 @@
       }
     </style>
 
+    <link rel="stylesheet" href="./portfolio-chat.css" />
+    <script src="./portfolio-chat.js" defer></script>
     <title>Atul Kumar</title>
   </head>
 
@@ -521,7 +510,6 @@
       })();
     </script>
 
-    <div id="theme-reveal"></div>
     <div id="touch-cursor"></div>
     <div id="maincontent">
       <div class="header">
@@ -882,6 +870,39 @@
       <div class="footer">Jan '26</div>
     </div>
 
+    <button
+      id="portfolio-chat-launcher"
+      class="portfolio-chat-launcher"
+      type="button"
+      aria-expanded="false"
+      aria-controls="portfolio-chat"
+      hidden
+    ><span class="portfolio-chat-mark" aria-hidden="true">&gt;</span> Ask about my work</button>
+
+    <aside
+      id="portfolio-chat"
+      class="portfolio-chat-panel"
+      aria-labelledby="portfolio-chat-title"
+      data-endpoint=""
+      hidden
+    >
+      <div class="portfolio-chat-header">
+        <h2 id="portfolio-chat-title"><span class="portfolio-chat-mark" aria-hidden="true">/</span> Ask about my work</h2>
+        <div class="portfolio-chat-controls">
+          <button id="portfolio-chat-close" class="portfolio-chat-close" type="button" aria-label="Close chat">×</button>
+        </div>
+      </div>
+      <div id="portfolio-chat-log" class="portfolio-chat-log" role="log" aria-label="Conversation">
+        <p class="portfolio-chat-intro">Ask about a project, my background, or how to reach me.</p>
+      </div>
+      <p id="portfolio-chat-status" class="portfolio-chat-status" role="status" hidden></p>
+      <form id="portfolio-chat-form" class="portfolio-chat-form">
+        <span class="portfolio-chat-mark" aria-hidden="true">&gt;</span>
+        <input id="portfolio-chat-question" type="text" aria-label="Ask a question" placeholder="Ask a question..." maxlength="400" autocomplete="off" required />
+        <button id="portfolio-chat-send" type="submit">Send</button>
+      </form>
+    </aside>
+
     <script>
       const savedTheme = localStorage.getItem("theme");
       if (savedTheme === "dark") {
@@ -891,72 +912,60 @@
       }
       updateToggleIcon();
 
-      function toggleTheme() {
-        const reveal = document.getElementById("theme-reveal");
-        const btn = document.querySelector(".theme-toggle");
-        const rect = btn.getBoundingClientRect();
+      let activePortfolioTransition;
+      let nextThemeIsDark = document.body.classList.contains("dark-mode");
+      const reducePortfolioMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-
-        const isCurrentlyLight = !document.body.classList.contains("dark-mode");
-
-        reveal.style.transition = "none";
-        reveal.style.backgroundColor = "#ffffff";
-
-        if (isCurrentlyLight) {
-          // Light → Dark
-          document.body.style.transition = "color 0.8s ease";
-          document.body.classList.add("dark-mode");
-          localStorage.setItem("theme", "dark");
-          reveal.style.clipPath = `circle(150% at ${x}px ${y}px)`;
-
-          reveal.offsetHeight;
-
-          reveal.style.transition =
-            "clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-          reveal.style.clipPath = `circle(0% at ${x}px ${y}px)`;
-
-          triggerAllScramble();
-
-          setTimeout(() => {
-            reveal.style.backgroundColor = "transparent";
-          }, 800);
-        } else {
-          // Dark → Light
-          document.body.style.transition = "color 0.8s ease";
-          document.body.style.setProperty("--text-color", "#000000");
-
-          reveal.style.clipPath = `circle(0% at ${x}px ${y}px)`;
-          reveal.offsetHeight;
-
-          reveal.style.transition =
-            "clip-path 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
-          reveal.style.clipPath = `circle(150% at ${x}px ${y}px)`;
-
-          triggerAllScramble();
-
-          setTimeout(() => {
-            document.body.classList.remove("dark-mode");
-            localStorage.setItem("theme", "light");
-            updateToggleIcon();
-            document.body.style.removeProperty("--text-color");
-            reveal.style.transition = "none";
-            reveal.style.backgroundColor = "transparent";
-            reveal.style.clipPath = `circle(0% at ${x}px ${y}px)`;
-          }, 800);
+      async function runPortfolioTransition(className, update, origin) {
+        if (!document.startViewTransition || reducePortfolioMotion.matches) {
+          update();
+          return;
         }
 
-        updateToggleIcon();
+        while (activePortfolioTransition) {
+          activePortfolioTransition.skipTransition();
+          await activePortfolioTransition.finished.catch(() => {});
+        }
+
+        const root = document.documentElement;
+        root.classList.add(className);
+        if (origin) root.style.setProperty("--portfolio-theme-origin", origin);
+        const transition = document.startViewTransition(update);
+        activePortfolioTransition = transition;
+        try {
+          await transition.finished;
+        } finally {
+          root.classList.remove(className);
+          if (origin) root.style.removeProperty("--portfolio-theme-origin");
+          activePortfolioTransition = undefined;
+        }
+      }
+
+      function toggleTheme(button = document.querySelector(".theme-toggle")) {
+        nextThemeIsDark = !nextThemeIsDark;
+        const dark = nextThemeIsDark;
+        const rect = button.getBoundingClientRect();
+        const x = Math.max(0, Math.min(innerWidth, rect.left + rect.width / 2));
+        const y = Math.max(0, Math.min(innerHeight, rect.top + rect.height / 2));
+
+        runPortfolioTransition(dark ? "portfolio-theme-dark" : "portfolio-theme-light", () => {
+          document.body.classList.toggle("dark-mode", dark);
+          try {
+            localStorage.setItem("theme", dark ? "dark" : "light");
+          } catch {
+            // The theme still works for the current page if storage is unavailable.
+          }
+          updateToggleIcon();
+        }, `${x}px ${y}px`).then(() => {
+          if (!reducePortfolioMotion.matches) triggerAllScramble();
+        });
       }
 
       function updateToggleIcon() {
-        const toggle = document.querySelector(".theme-toggle");
-        if (!toggle) return;
-
-        const icon = toggle.querySelector(".toggle-icon") || toggle;
         const isDark = document.body.classList.contains("dark-mode");
-        icon.textContent = isDark ? "[ ● ]" : "[ ○ ]";
+        document.querySelectorAll(".theme-toggle .toggle-icon").forEach((icon) => {
+          icon.textContent = isDark ? "[ ● ]" : "[ ○ ]";
+        });
       }
 
       updateToggleIcon();
