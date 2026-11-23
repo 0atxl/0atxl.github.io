@@ -1,8 +1,10 @@
 # Portfolio chat
 
-GitHub Pages serves the portfolio. The chat searches public notes in
-`lib/knowledge.js` in the browser and displays matching excerpts and source links.
-Its `data-endpoint` attribute in `index.html` is empty.
+GitHub Pages serves the portfolio. The widget posts questions to `/api/chat`
+on Vercel. The endpoint sends each valid question, recent questions, and the
+public notes in `lib/knowledge.js` to Gemini 3.5 Flash-Lite. Gemini writes the
+reply. The endpoint resolves any cited note IDs to public links.
 
-The former Vercel `/api/chat` endpoint returns HTTP 410. The retrieval and
-response handler remains in `lib/handler.js` for a future backend.
+On Vercel, use `chat-api` as the Root Directory, the Other framework preset,
+and `GOOGLE_GENERATIVE_AI_API_KEY` as a server-side Production secret.
+The widget shows an availability message if Gemini fails.

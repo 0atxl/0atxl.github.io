@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { citationsFor, retrieveDocuments, unknownAnswer } from './knowledge.js';
+import { citationsFor, publicNotes } from './knowledge.js';
 
 const allowedOrigins = new Set([
   'https://atulk.me', 'https://www.atulk.me', 'https://0atxl.github.io'
@@ -69,12 +69,9 @@ export async function handleChat(request, { generateAnswer }) {
   if (!parsed.success) return json({ error: 'Enter a question of 1–400 characters.' }, 400);
 
   const { question: current, history } = parsed.data;
-  const notes = retrieveDocuments(current, history);
-  if (!notes.length) return json(unknownAnswer);
   try {
-    const answer = await generateAnswer({ question: current, history, notes });
-    const cited = notes.filter(({ id }) => answer.sourceIds.includes(id));
-    if (!cited.length || !answer.paragraphs.length) return json(unknownAnswer);
+    const answer = await generateAnswer({ question: current, history, notes: publicNotes });
+    const cited = publicNotes.filter(({ id }) => answer.sourceIds.includes(id));
 
     // Keep both paragraph count and the total size of the rendered reply bounded.
     let wordsLeft = 120;
@@ -88,7 +85,7 @@ export async function handleChat(request, { generateAnswer }) {
       wordsLeft -= limit;
       if (!wordsLeft) break;
     }
-    return json(paragraphs.length ? { paragraphs, sources: citationsFor(cited) } : unknownAnswer);
+    return json({ paragraphs, sources: citationsFor(cited) });
   } catch (error) {
     if (error?.statusCode === 402) {
       return json({ error: 'Gemini is temporarily unavailable.' }, 402);
@@ -96,7 +93,7 @@ export async function handleChat(request, { generateAnswer }) {
     if (error?.statusCode === 429) {
       return json({ error: 'The model service is busy. Try again shortly.' }, 429);
     }
-    console.error('Portfolio chat generation failed', { name: error?.name });
+    console.error('Portfolio chat generation failed', { name: error?.name, message: error?.name === 'Error' ? error.message : undefined });
     return json({ error: 'Chat couldn’t answer right now. Try again shortly.' }, 503);
   }
 }

@@ -99,15 +99,9 @@
     if (links.childElementCount) log.append(links);
   }
 
-  async function answerFromNotes(question) {
-    const { retrieveDocuments, citationsFor, unknownAnswer } = await import('./chat-api/lib/knowledge.js');
-    const notes = retrieveDocuments(question, history.slice(-3)).slice(0, 2);
-    return notes.length ? { paragraphs: notes.map(({ text }) => text), sources: citationsFor(notes) } : unknownAnswer;
-  }
-
   async function requestAnswer(question) {
     const endpoint = panel.dataset.endpoint;
-    if (!endpoint) return answerFromNotes(question);
+    if (!endpoint) throw new Error('Chat is temporarily unavailable.');
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -115,18 +109,12 @@
       credentials: 'omit',
       signal: AbortSignal.timeout(18_000)
     });
-    if (response.status === 402) {
-      const notes = await answerFromNotes(question);
-      return { ...notes, notice: 'Gemini is unavailable. This answer uses public portfolio notes.' };
-    }
+    if (response.status === 402) throw new Error('Gemini is temporarily unavailable.');
     if (response.status === 429) throw new Error('The model service is busy. Try again shortly.');
     if (!response.ok) throw new Error('Chat couldn’t answer right now. Try again shortly.');
     return response.json();
   }
 
-  if (!panel.dataset.endpoint) {
-    log.querySelector('.portfolio-chat-intro').textContent = 'Ask about my projects or background. Answers use public portfolio notes.';
-  }
   launcher.hidden = false;
   launcher.addEventListener('click', () => setOpen(true));
   close.addEventListener('click', () => setOpen(false));
@@ -146,14 +134,14 @@
     showQuestion(question);
     questionInput.value = '';
     submit.disabled = true;
-    showStatus('Looking up portfolio notes…');
+    showStatus('Waiting for Gemini…');
     log.scrollTop = log.scrollHeight;
     try {
       const answer = await requestAnswer(question);
       showAnswer(answer);
       history.push(question);
       if (history.length > 3) history.shift();
-      showStatus(answer.notice);
+      showStatus();
     } catch (error) {
       showStatus(error instanceof Error && error.name === 'Error'
         ? error.message : 'Chat couldn’t answer right now. Try again shortly.');
