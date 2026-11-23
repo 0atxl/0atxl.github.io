@@ -94,14 +94,170 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        margin-bottom: 25px;
       }
 
       .header h1 {
         margin: 0;
-        font-size: 1.5rem;
+        font-size: 1.45rem;
         font-weight: 700;
         line-height: 1.2;
+      }
+
+      .header h1 .handle {
+        font-size: 13px;
+        font-weight: 400;
+        color: #888;
+        margin-left: 6px;
+      }
+
+      body.dark-mode .header h1 .handle {
+        color: #666;
+      }
+
+      .section-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #777;
+        margin-top: 30px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 0.03em;
+      }
+
+      body.dark-mode .section-label {
+        color: #888;
+      }
+
+      .section-label .slash {
+        color: #E5322D;
+        font-weight: 700;
+      }
+
+      .project-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin: 0 0 20px;
+        padding: 0;
+        list-style: none;
+      }
+
+      .project-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .project-header {
+        display: grid;
+        grid-template-columns: 22px minmax(0, auto) minmax(8px, 1fr) auto;
+        align-items: baseline;
+        gap: 8px;
+        font-size: 14.5px;
+      }
+
+      .project-num {
+        font-size: 12px;
+        color: #888;
+      }
+
+      .project-name {
+        font-weight: 600;
+      }
+
+      .leader {
+        position: relative;
+        margin: 0 4px;
+        height: 1px;
+        align-self: center;
+      }
+
+      .leader::before,
+      .leader::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+      }
+
+      .leader::before {
+        border-bottom: 1px dotted currentColor;
+        opacity: 0.25;
+      }
+
+      .leader::after {
+        background: #E5322D;
+        box-shadow: 0 0 5px #E5322D, 0 0 9px #E5322D;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.32s ease-out;
+      }
+
+      .project-item:is(:hover, :focus-within) .leader::after {
+        transform: scaleX(1);
+      }
+
+      .project-links {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .project-links a {
+        text-decoration: none;
+      }
+
+      .project-links a:is(:hover, :focus-visible) {
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+
+      .project-arrow {
+        display: inline-block;
+        font-size: 13px;
+        opacity: 0.55;
+        transition: transform 0.2s ease, opacity 0.2s ease, color 0.2s ease;
+      }
+
+      .project-links a:is(:hover, :focus-visible) .project-arrow {
+        transform: translate(2px, -2px);
+        opacity: 1;
+        color: #E5322D !important;
+      }
+
+      .project-item:is(:hover, :focus-within) .project-links a:first-child .project-arrow {
+        opacity: 1;
+        color: #E5322D !important;
+        transition-delay: 0.22s;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .leader::after,
+        .project-arrow {
+          transition: none !important;
+        }
+      }
+
+      .project-desc {
+        margin: 0;
+        padding-left: 30px;
+        font-size: 13px;
+        color: #666;
+        line-height: 1.4;
+      }
+
+      body.dark-mode .project-desc {
+        color: #999;
+      }
+
+      @media (max-width: 600px) {
+        .project-desc {
+          padding-left: 0;
+        }
       }
 
       .top-links {
@@ -150,7 +306,50 @@
       }
 
       .red-char {
-        color: #e15858 !important;
+        color: #E5322D !important;
+      }
+
+      .oval-doodle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        overflow: visible;
+        z-index: 2;
+      }
+
+      .oval-doodle path {
+        fill: none;
+        stroke: #E5322D;
+        stroke-width: 1.4px;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 1.05;
+        stroke-dashoffset: 1.05;
+        opacity: 0;
+        transition:
+          stroke-dashoffset 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.15s ease;
+      }
+
+      a:hover .oval-doodle path,
+      button:hover .oval-doodle path,
+      a:focus-visible .oval-doodle path,
+      button:focus-visible .oval-doodle path,
+      .project-item:hover .oval-doodle path {
+        stroke-dashoffset: 0;
+        opacity: 1;
+        transition:
+          stroke-dashoffset 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+          opacity 0.05s ease;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .oval-doodle path {
+          transition: none !important;
+        }
       }
 
       .theme-toggle {
@@ -163,6 +362,14 @@
         margin-left: 15px;
         margin-right: 15px;
         padding: 2px 0;
+        position: relative;
+        display: inline-block;
+      }
+
+      .toggle-icon {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
       }
 
       #theme-reveal {
@@ -216,6 +423,14 @@
         white-space: nowrap;
         letter-spacing: 0;
         font-family: "JetBrains Mono", monospace;
+        position: relative;
+        text-decoration: none !important;
+      }
+
+      .scramble-label {
+        position: relative;
+        z-index: 1;
+        display: inline-block;
       }
 
       @media (max-width: 600px) {
@@ -269,9 +484,9 @@
         }
 
         #touch-cursor.hovering {
-          border-color: #e15858 !important;
-          background-color: rgba(225, 88, 88, 0.08);
-          box-shadow: 0 0 10px rgba(225, 88, 88, 0.25);
+          border-color: #E5322D !important;
+          background-color: rgba(229, 50, 45, 0.08);
+          box-shadow: 0 0 10px rgba(229, 50, 45, 0.25);
         }
 
         body.dark-mode #touch-cursor {
@@ -282,9 +497,9 @@
         }
 
         body.dark-mode #touch-cursor.hovering {
-          border-color: #e15858 !important;
-          background-color: rgba(225, 88, 88, 0.18);
-          box-shadow: 0 0 12px rgba(225, 88, 88, 0.35);
+          border-color: #E5322D !important;
+          background-color: rgba(229, 50, 45, 0.18);
+          box-shadow: 0 0 12px rgba(229, 50, 45, 0.35);
         }
       }
     </style>
@@ -310,7 +525,7 @@
     <div id="touch-cursor"></div>
     <div id="maincontent">
       <div class="header">
-        <h1>Atul Kumar</h1>
+        <h1>Atul Kumar <span class="handle">/ 0atxl</span></h1>
         <div class="top-links">
           <a
             href="https://linkedin.com/in/0atxl"
@@ -348,7 +563,7 @@
             aria-label="Toggle theme"
             title="Ctrl+D or T"
           >
-            [ ○ ]
+            <span class="toggle-icon">[ ○ ]</span>
           </button>
         </div>
       </div>
@@ -359,7 +574,7 @@
         performant developer tools and practical software.
       </p>
 
-      Some things about me:
+      <div class="section-label"><span class="slash">/</span> about</div>
 
       <ul>
         <li>Currently based in Vadodara. Grew up in Rourkela, India.</li>
@@ -373,7 +588,7 @@
         <li>Fast learner and enjoy helping others.</li>
       </ul>
 
-      Some things I believe:
+      <div class="section-label"><span class="slash">/</span> ethos</div>
 
       <ul>
         <li>
@@ -390,44 +605,230 @@
         <li>Teaching and explaining ideas reinforces learning.</li>
       </ul>
 
-      What I'm building:
-      <ul>
-        <li>
-          <a
-            href="https://0xbin.app"
-            data-scramble="0xbin"
-            aria-label="0xbin"
-            target="_blank"
-            rel="noopener noreferrer"
-            >0xbin</a
-          >
-          — Encrypted, privacy-first pastebin with CLI support.
+      <div id="projects" class="section-label"><span class="slash">/</span> building</div>
+
+      <ul class="project-list" role="list" aria-labelledby="projects">
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">01</span>
+            <span class="project-name">0xbin</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://0xbin.app/"
+                aria-label="0xbin demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/0xbin"
+                aria-label="0xbin github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Encrypted paste sharing with automatic expiry and real-time collaboration.</p>
         </li>
-        <li>
-          <a
-            href="https://trialsync.atuls.me"
-            data-scramble="TrialSync"
-            aria-label="TrialSync"
-            target="_blank"
-            rel="noopener noreferrer"
-            >TrialSync</a
-          >
-          — NLP-powered patient-trial eligibility matching system.
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">02</span>
+            <span class="project-name">TrialSync</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://trialsync.atuls.me/"
+                aria-label="TrialSync demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/TrialSync"
+                aria-label="TrialSync github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Clinical-trial eligibility screening with an evidence trail for each match.</p>
         </li>
-        <li>
-          More automation tools and experiments on
-          <a
-            href="https://github.com/0atxl"
-            data-scramble="GitHub"
-            aria-label="GitHub"
-            target="_blank"
-            rel="noopener noreferrer"
-            >GitHub</a
-          >.
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">03</span>
+            <span class="project-name">Morning</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://morning.atuls.me/"
+                aria-label="Morning demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/morning"
+                aria-label="Morning github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Multilingual voice assistant for reminders, email drafts, and sourced answers.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">04</span>
+            <span class="project-name">ClawForge</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://tryclawforge.vercel.app/"
+                aria-label="ClawForge demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/clawforge"
+                aria-label="ClawForge github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Interactive 3D CAD studio with a side-by-side AI inference benchmark.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">05</span>
+            <span class="project-name">Subpoena</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://subpoena.vercel.app/"
+                aria-label="Subpoena demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/subpoena"
+                aria-label="Subpoena github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Courtroom-themed GitHub activity summaries and printable rap sheets.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">06</span>
+            <span class="project-name">Stickies</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://getstickies.vercel.app/"
+                aria-label="Stickies website"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Website <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/stickies"
+                aria-label="Stickies github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Native desktop notes that stay at the edge of the screen.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">07</span>
+            <span class="project-name">apsis</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://ap-sis.vercel.app/"
+                aria-label="apsis demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/ap-sis"
+                aria-label="apsis github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Simulates Solana payments and recovers the deposits from empty token accounts.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">08</span>
+            <span class="project-name">Frost</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://getfrost.vercel.app/"
+                aria-label="Frost demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+              <a
+                href="https://github.com/0atxl/frost"
+                aria-label="Frost github"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Linux file manager with a browser interface and an interactive demo.</p>
+        </li>
+
+        <li class="project-item">
+          <div class="project-header">
+            <span class="project-num" aria-hidden="true">09</span>
+            <span class="project-name">DOOR</span>
+            <span class="leader"></span>
+            <div class="project-links">
+              <a
+                href="https://doorprep.vercel.app/"
+                aria-label="DOOR demo"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Demo <span class="project-arrow" aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+          <p class="project-desc">Local-first practice for the GATE CS and DA exams.</p>
         </li>
       </ul>
 
-      What I work with:
+      <div class="section-label"><span class="slash">/</span> stack</div>
+
       <ul>
         <li>Languages: Python, C++, TypeScript, Java, GO</li>
         <li>Built ML systems for healthcare and energy (PyTorch, NLP)</li>
@@ -438,7 +839,8 @@
           platforms
         </li>
       </ul>
-      <br />
+
+      <div class="section-label"><span class="slash">/</span> profiles</div>
       <div class="links">
         <a
           href="https://codeforces.com/profile/0atxl"
@@ -552,8 +954,9 @@
         const toggle = document.querySelector(".theme-toggle");
         if (!toggle) return;
 
+        const icon = toggle.querySelector(".toggle-icon") || toggle;
         const isDark = document.body.classList.contains("dark-mode");
-        toggle.textContent = isDark ? "[ ● ]" : "[ ○ ]";
+        icon.textContent = isDark ? "[ ● ]" : "[ ○ ]";
       }
 
       updateToggleIcon();
@@ -573,11 +976,23 @@
       class ScrambleText {
         constructor(element) {
           this.element = element;
-          this.originalText = element.dataset.scramble || element.textContent;
+          this.originalText = element.dataset.scramble || element.textContent.trim();
           this.chars =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*";
           this.isAnimating = false;
           this.intervalId = null;
+
+          let label = element.querySelector(".scramble-label");
+          if (!label) {
+            label = document.createElement("span");
+            label.className = "scramble-label";
+            label.textContent = this.originalText;
+            const existingSvg = element.querySelector(".oval-doodle");
+            element.innerHTML = "";
+            element.appendChild(label);
+            if (existingSvg) element.appendChild(existingSvg);
+          }
+          this.label = label;
 
           element.addEventListener("mouseenter", () => this.scramble());
           element.addEventListener("mouseleave", () => this.reset());
@@ -597,7 +1012,7 @@
           const speed = 100;
 
           this.intervalId = setInterval(() => {
-            this.element.innerHTML = this.originalText
+            this.label.innerHTML = this.originalText
               .split("")
               .map((char, index) => {
                 if (char === " ") return " ";
@@ -618,7 +1033,7 @@
 
             if (iterations >= maxIterations) {
               clearInterval(this.intervalId);
-              this.element.textContent = this.originalText;
+              this.label.textContent = this.originalText;
               this.isAnimating = false;
             }
           }, speed);
@@ -630,12 +1045,106 @@
             this.intervalId = null;
           }
           this.isAnimating = false;
-          this.element.textContent = this.originalText;
+          this.label.textContent = this.originalText;
           this.element.style.width = "auto";
         }
       }
 
-      // Initialize scramble for all links
+      function generateOvalDoodlePath(w, h, seed = 1) {
+        const padX = Math.max(7, Math.min(12, w * 0.08));
+        const padY = Math.max(5, Math.min(8, h * 0.2));
+
+        const cx = w / 2;
+        const cy = h / 2;
+        const rx = (w / 2) + padX;
+        const ry = (h / 2) + padY;
+
+        const aspect = w / Math.max(h, 1);
+        const n = aspect > 2.5 ? 2.65 : (aspect > 1.4 ? 2.35 : 2.1);
+
+        function rand(offset) {
+          const s = Math.sin(seed * 4127.31 + offset * 7919.17) * 43758.5453;
+          return s - Math.floor(s);
+        }
+
+        const baseSteps = 10;
+        const overlapSteps = 2;
+        const totalSteps = baseSteps + overlapSteps;
+        const startAngle = -Math.PI * 0.72;
+        const pts = [];
+
+        for (let i = 0; i <= totalSteps; i++) {
+          const angle = startAngle + (i / baseSteps) * (Math.PI * 2);
+
+          const cosA = Math.cos(angle);
+          const sinA = Math.sin(angle);
+          const signCos = Math.sign(cosA) || 1;
+          const signSin = Math.sign(sinA) || 1;
+
+          const jitterR = (rand(i * 4) - 0.5) * 1.8;
+          const jitterY = (rand(i * 4 + 1) - 0.5) * 1.4;
+          const flare = i >= baseSteps ? (i - baseSteps + 1) * 1.6 : 0;
+
+          const curRx = rx + jitterR + flare;
+          const curRy = ry + (jitterR * 0.5) + flare;
+
+          const rawX = signCos * curRx * Math.pow(Math.abs(cosA), 2 / n);
+          const rawY = signSin * curRy * Math.pow(Math.abs(sinA), 2 / n);
+
+          const tilt = (rand(99) - 0.5) * 0.035;
+          const rotX = rawX * Math.cos(tilt) - rawY * Math.sin(tilt);
+          const rotY = rawX * Math.sin(tilt) + rawY * Math.cos(tilt);
+
+          const x = cx + rotX;
+          const y = cy + rotY + jitterY;
+          pts.push({ x: Number(x.toFixed(2)), y: Number(y.toFixed(2)) });
+        }
+
+        let d = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[Math.max(0, i - 1)];
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const p3 = pts[Math.min(pts.length - 1, i + 2)];
+
+          const cp1x = p1.x + (p2.x - p0.x) / 6;
+          const cp1y = p1.y + (p2.y - p0.y) / 6;
+          const cp2x = p2.x - (p3.x - p1.x) / 6;
+          const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+          d += ` C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x} ${p2.y}`;
+        }
+        return d;
+      }
+
+      function attachOvalDoodles() {
+        const targets = document.querySelectorAll("a[data-scramble], .theme-toggle");
+        targets.forEach((el, index) => {
+          let svg = el.querySelector(".oval-doodle");
+          if (!svg) {
+            svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("class", "oval-doodle");
+            svg.setAttribute("aria-hidden", "true");
+            el.appendChild(svg);
+          }
+
+          const rect = el.getBoundingClientRect();
+          const w = Math.round(rect.width) || 40;
+          const h = Math.round(rect.height) || 20;
+
+          let path = svg.querySelector("path");
+          if (!path) {
+            path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("pathLength", "1");
+            svg.appendChild(path);
+          }
+
+          const d = generateOvalDoodlePath(w, h, index + 1);
+          path.setAttribute("d", d);
+        });
+      }
+
+      // Initialize scramble and doodles for all links
       document.addEventListener("DOMContentLoaded", () => {
         const observerOptions = {
           threshold: 0.5,
@@ -659,6 +1168,17 @@
           el.scrambleInstance = instance;
           observer.observe(el);
         });
+
+        attachOvalDoodles();
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(attachOvalDoodles);
+        }
+      });
+
+      let resizeTimeout;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(attachOvalDoodles, 150);
       });
 
       // Keyboard shortcuts: Ctrl+D or T
