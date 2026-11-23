@@ -2,15 +2,39 @@
   const launcher = document.querySelector('#portfolio-chat-launcher');
   const panel = document.querySelector('#portfolio-chat');
   const close = document.querySelector('#portfolio-chat-close');
-  const themeToggle = document.querySelector('.theme-toggle');
-  const portfolioThemeSlot = themeToggle.parentElement;
   const log = document.querySelector('#portfolio-chat-log');
   const form = document.querySelector('#portfolio-chat-form');
   const questionInput = document.querySelector('#portfolio-chat-question');
   const submit = document.querySelector('#portfolio-chat-send');
   const status = document.querySelector('#portfolio-chat-status');
+  const phoneLayout = matchMedia('(max-width: 820px), (max-height: 520px) and (pointer: coarse)');
+  const visualViewport = window.visualViewport;
   const history = [];
   let chatOpen = false;
+  let restingHeight = 0;
+  let restingWidth = 0;
+
+  function fitPhoneChat() {
+    if (panel.hidden || !phoneLayout.matches) return;
+
+    // Mobile keyboards can resize the visual viewport without moving fixed elements.
+    const height = visualViewport?.height ?? window.innerHeight;
+    const top = Math.max(0, visualViewport?.offsetTop ?? 0);
+    const bottom = Math.max(0, window.innerHeight - top - height);
+    const typing = document.activeElement === questionInput;
+    if (!restingHeight || restingWidth !== window.innerWidth || (!typing && bottom < 72)) {
+      restingHeight = height;
+      restingWidth = window.innerWidth;
+    }
+    const keyboardOpen = bottom >= 72 || (typing && restingHeight - height >= 72);
+    const atEnd = log.scrollHeight - log.scrollTop - log.clientHeight < 8;
+
+    document.body.style.setProperty('--portfolio-visible-top', `${top}px`);
+    panel.style.setProperty('--portfolio-visible-height', `${height}px`);
+    panel.style.setProperty('--portfolio-keyboard-inset', `${bottom}px`);
+    panel.classList.toggle('portfolio-chat-keyboard-open', keyboardOpen);
+    if (atEnd) log.scrollTop = log.scrollHeight;
+  }
 
   function setOpen(open) {
     if (open === chatOpen) return;
@@ -20,9 +44,13 @@
       panel.hidden = !open;
       launcher.hidden = open;
       launcher.setAttribute('aria-expanded', String(open));
-      if (open) close.before(themeToggle);
-      else portfolioThemeSlot.append(themeToggle);
-      (open ? questionInput : launcher).focus({ preventScroll: true });
+      if (open) {
+        restingHeight = 0;
+        fitPhoneChat();
+        (phoneLayout.matches ? close : questionInput).focus({ preventScroll: true });
+      } else {
+        launcher.focus({ preventScroll: true });
+      }
     });
   }
 
@@ -98,6 +126,11 @@
   launcher.hidden = false;
   launcher.addEventListener('click', () => setOpen(true));
   close.addEventListener('click', () => setOpen(false));
+  window.addEventListener('resize', fitPhoneChat);
+  visualViewport?.addEventListener('resize', fitPhoneChat);
+  visualViewport?.addEventListener('scroll', fitPhoneChat);
+  questionInput.addEventListener('focus', fitPhoneChat);
+  questionInput.addEventListener('blur', fitPhoneChat);
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && chatOpen) setOpen(false);
   });
