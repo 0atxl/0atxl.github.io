@@ -6,6 +6,7 @@
     "node": "22.x"
   },
   "dependencies": {
+    "@ai-sdk/google": "4.0.124",
     "ai": "7.0.179",
     "zod": "4.6.7"
   }

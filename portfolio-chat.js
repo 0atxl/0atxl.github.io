@@ -115,6 +115,10 @@
       credentials: 'omit',
       signal: AbortSignal.timeout(18_000)
     });
+    if (response.status === 402) {
+      const notes = await answerFromNotes(question);
+      return { ...notes, notice: 'Gemini is unavailable. This answer uses public portfolio notes.' };
+    }
     if (response.status === 429) throw new Error('The model service is busy. Try again shortly.');
     if (!response.ok) throw new Error('Chat couldn’t answer right now. Try again shortly.');
     return response.json();
@@ -149,7 +153,7 @@
       showAnswer(answer);
       history.push(question);
       if (history.length > 3) history.shift();
-      showStatus();
+      showStatus(answer.notice);
     } catch (error) {
       showStatus(error instanceof Error && error.name === 'Error'
         ? error.message : 'Chat couldn’t answer right now. Try again shortly.');

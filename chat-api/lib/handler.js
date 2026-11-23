@@ -90,6 +90,9 @@ export async function handleChat(request, { generateAnswer }) {
     }
     return json(paragraphs.length ? { paragraphs, sources: citationsFor(cited) } : unknownAnswer);
   } catch (error) {
+    if (error?.statusCode === 402) {
+      return json({ error: 'Gemini is temporarily unavailable.' }, 402);
+    }
     if (error?.statusCode === 429) {
       return json({ error: 'The model service is busy. Try again shortly.' }, 429);
     }

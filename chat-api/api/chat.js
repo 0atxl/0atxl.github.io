@@ -1,3 +1,4 @@
+import { google } from '@ai-sdk/google';
 import { generateText, Output } from 'ai';
 import { z } from 'zod';
 import { handleChat } from '../lib/handler.js';
@@ -8,13 +9,16 @@ const answerSchema = z.object({
 });
 
 async function generateAnswer({ question, history, notes }) {
+  const model = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+    ? google(process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite')
+    : (process.env.AI_GATEWAY_MODEL || 'google/gemini-3.5-flash-lite');
   const payload = JSON.stringify({
     question,
     earlierQuestions: history,
     publicNotes: notes.map(({ id, title, text }) => ({ id, title, text }))
   });
   const { output } = await generateText({
-    model: process.env.AI_GATEWAY_MODEL || 'google/gemini-3.5-flash-lite',
+    model,
     maxOutputTokens: 320,
     maxRetries: 0,
     abortSignal: AbortSignal.timeout(12_000),
