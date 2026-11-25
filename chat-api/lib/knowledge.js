@@ -187,6 +187,12 @@ export const publicNotes = [
 
 export const notesById = new Map(publicNotes.map((note) => [note.id, note]));
 
+export const repoSlugByProjectId = Object.fromEntries(
+  publicNotes
+    .filter((note) => typeof note.repo === 'string' && note.repo.startsWith('https://github.com/'))
+    .map((note) => [note.id, note.repo.replace('https://github.com/', '').replace(/\/+$/, '')])
+);
+
 export const portfolioIndexCard = [
   'Portfolio overview for Atul Kumar (handle: 0atxl, email: hello@atulk.me):',
   ...publicNotes.map((note) => `- [${note.id}] ${note.title}: ${note.summary}`)

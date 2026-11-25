@@ -3,11 +3,12 @@ import {
   matchFastPath,
   normalizeCacheKey,
   starterPrompts
-} from './chat-api/lib/knowledge.js?v=5';
+} from './chat-api/lib/knowledge.js?v=6';
 
 const launcher = document.querySelector('#portfolio-chat-launcher');
 const panel = document.querySelector('#portfolio-chat');
 const close = document.querySelector('#portfolio-chat-close');
+const clearBtn = document.querySelector('#portfolio-chat-clear');
 const log = document.querySelector('#portfolio-chat-log');
 const form = document.querySelector('#portfolio-chat-form');
 const questionInput = document.querySelector('#portfolio-chat-question');
@@ -16,8 +17,9 @@ const status = document.querySelector('#portfolio-chat-status');
 const phoneLayout = matchMedia('(max-width: 820px), (max-height: 520px) and (pointer: coarse)');
 const visualViewport = window.visualViewport;
 
-const CACHE_PREFIX = 'atulk-chat:v5:';
+const CACHE_PREFIX = 'atulk-chat:v6:';
 const CACHE_TTL_MS = 30 * 60 * 1000;
+const INTRO_TEXT = 'Ask about a project, my background, or how to reach me.';
 const history = [];
 let chatOpen = false;
 let restingHeight = 0;
@@ -77,6 +79,12 @@ function showStatus(message = '') {
   status.hidden = !message;
 }
 
+function updateClearVisibility() {
+  if (clearBtn) {
+    clearBtn.hidden = history.length === 0 && !log.querySelector('.portfolio-chat-question');
+  }
+}
+
 function readClientCache(key) {
   if (!key) return null;
   try {
@@ -111,6 +119,7 @@ function showQuestion(question) {
   mark.textContent = '> ';
   line.append(mark, question);
   log.append(line);
+  updateClearVisibility();
 }
 
 function createAnswerContainer({ streaming = false } = {}) {
@@ -123,6 +132,16 @@ function createAnswerContainer({ streaming = false } = {}) {
   }
   log.append(box);
   return box;
+}
+
+function renderToolStatus(box, text) {
+  const pinBottom = isScrolledNearEnd();
+  box.replaceChildren();
+  const line = document.createElement('p');
+  line.className = 'portfolio-chat-tool-status';
+  line.textContent = text;
+  box.append(line);
+  if (pinBottom) log.scrollTop = log.scrollHeight;
 }
 
 function renderStreamingText(box, rawText) {
@@ -177,7 +196,7 @@ function renderFinalAnswer(box, { paragraphs, sources }) {
   if (pinBottom) log.scrollTop = log.scrollHeight;
 }
 
-async function consumeSseResponse(response, onDelta) {
+async function consumeSseResponse(response, { onDelta, onStatus }) {
   const reader = response.body?.getReader();
   if (!reader) throw new Error('Chat stream was empty.');
 
@@ -197,7 +216,9 @@ async function consumeSseResponse(response, onDelta) {
     }
     if (!dataLines.length) return;
     const payload = JSON.parse(dataLines.join('\n'));
-    if (eventName === 'delta' && typeof payload?.text === 'string') {
+    if (eventName === 'status' && typeof payload?.text === 'string') {
+      onStatus?.(payload.text);
+    } else if (eventName === 'delta' && typeof payload?.text === 'string') {
       onDelta(payload.text);
     } else if (eventName === 'done') {
       finalPayload = payload;
@@ -227,7 +248,7 @@ async function consumeSseResponse(response, onDelta) {
   return finalPayload;
 }
 
-async function requestAnswer(question, onDelta) {
+async function requestAnswer(question, callbacks) {
   const endpoint = panel.dataset.endpoint;
   if (!endpoint) return buildFallbackAnswer(question, history);
 
@@ -243,7 +264,7 @@ async function requestAnswer(question, onDelta) {
       stream: true
     }),
     credentials: 'omit',
-    signal: AbortSignal.timeout(22_000)
+    signal: AbortSignal.timeout(24_000)
   });
 
   if (response.status === 429) {
@@ -259,7 +280,7 @@ async function requestAnswer(question, onDelta) {
 
   const contentType = response.headers.get('content-type') ?? '';
   if (contentType.includes('text/event-stream')) {
-    return consumeSseResponse(response, onDelta);
+    return consumeSseResponse(response, callbacks);
   }
   return response.json();
 }
@@ -269,6 +290,7 @@ function recordTurn(question, answer) {
   const sourceIds = Array.isArray(answer.sourceIds) ? answer.sourceIds.slice(0, 4) : [];
   history.push({ q: question, a: summary, sourceIds });
   if (history.length > 3) history.shift();
+  updateClearVisibility();
 }
 
 function renderStarterChips() {
@@ -294,6 +316,21 @@ function renderStarterChips() {
   log.append(group);
 }
 
+function clearChat() {
+  if (submit.disabled) return;
+  history.length = 0;
+  suggestionsEl = null;
+  log.replaceChildren();
+  const intro = document.createElement('p');
+  intro.className = 'portfolio-chat-intro';
+  intro.textContent = INTRO_TEXT;
+  log.append(intro);
+  renderStarterChips();
+  showStatus();
+  updateClearVisibility();
+  questionInput.focus({ preventScroll: true });
+}
+
 async function askQuestion(rawQuestion) {
   const question = rawQuestion.trim();
   if (!question || submit.disabled) return;
@@ -308,7 +345,7 @@ async function askQuestion(rawQuestion) {
   showStatus();
   log.scrollTop = log.scrollHeight;
 
-  // Layer 1: 0ms client-side deterministic fast-path (greetings, contact, overview chips).
+  // Layer 1: 0ms client-side deterministic fast-path.
   const fast = matchFastPath(question, history);
   if (fast) {
     const box = createAnswerContainer();
@@ -327,7 +364,7 @@ async function askQuestion(rawQuestion) {
     return;
   }
 
-  // Layer 2: Live SSE streaming from Vercel -> Azure Foundry (gpt-6-luna) / Gemini failover.
+  // Layer 2: Live SSE streaming from Vercel -> Azure Foundry (gpt-6-luna + GitHub repo tools).
   submit.disabled = true;
   log.setAttribute('aria-busy', 'true');
   const box = createAnswerContainer({ streaming: true });
@@ -335,9 +372,14 @@ async function askQuestion(rawQuestion) {
   log.scrollTop = log.scrollHeight;
 
   try {
-    const answer = await requestAnswer(question, (delta) => {
-      streamed += delta;
-      renderStreamingText(box, streamed);
+    const answer = await requestAnswer(question, {
+      onStatus(text) {
+        if (!streamed) renderToolStatus(box, text);
+      },
+      onDelta(delta) {
+        streamed += delta;
+        renderStreamingText(box, streamed);
+      }
     });
     renderFinalAnswer(box, answer);
     recordTurn(question, answer);
@@ -368,16 +410,20 @@ async function askQuestion(rawQuestion) {
 }
 
 renderStarterChips();
+updateClearVisibility();
 launcher.hidden = false;
 launcher.addEventListener('click', () => setOpen(true));
 close.addEventListener('click', () => setOpen(false));
+clearBtn?.addEventListener('click', clearChat);
 window.addEventListener('resize', fitPhoneChat);
 visualViewport?.addEventListener('resize', fitPhoneChat);
 visualViewport?.addEventListener('scroll', fitPhoneChat);
 questionInput.addEventListener('focus', fitPhoneChat);
 questionInput.addEventListener('blur', fitPhoneChat);
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'Escape' && chatOpen) setOpen(false);
+  if (event.key === 'Escape' && chatOpen && !document.querySelector('dialog[open]')) {
+    setOpen(false);
+  }
 });
 
 form.addEventListener('submit', (event) => {

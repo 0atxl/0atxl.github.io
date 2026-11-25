@@ -1,0 +1,508 @@
+/* Pure monochrome trifold resume preview modal + fold-and-fly download effect */
+
+.resume-dialog {
+  --resume-paper: #ffffff;
+  --resume-paper-back: #f2f2f2;
+  --resume-paper-stack: #f7f7f7;
+  --resume-border: #d4d4d4;
+  --resume-crease: rgb(0 0 0 / 0.06);
+  --resume-ink: #111111;
+  --resume-muted: #5a5a5a;
+  --resume-subtle: #888888;
+  --resume-shadow: 0 22px 60px rgb(0 0 0 / 0.14), 0 2px 8px rgb(0 0 0 / 0.06);
+  --resume-tab-bg: #fafafa;
+  --resume-accent: #E5322D;
+
+  padding: 0;
+  border: 0;
+  margin: auto;
+  overflow: visible;
+  background: transparent;
+  color: var(--resume-ink);
+  font-family: "JetBrains Mono", monospace;
+  max-width: min(540px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+
+  opacity: 0;
+  transition-property: opacity, transform, display, overlay;
+  transition-duration: 240ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  transition-behavior: allow-discrete;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(14px) scale(0.97);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition-duration: 100ms;
+  }
+}
+
+body.dark-mode .resume-dialog {
+  --resume-paper: #141414;
+  --resume-paper-back: #1d1d1d;
+  --resume-paper-stack: #101010;
+  --resume-border: #343434;
+  --resume-crease: rgb(255 255 255 / 0.07);
+  --resume-ink: #e4e4e4;
+  --resume-muted: #a0a0a0;
+  --resume-subtle: #6e6e6e;
+  --resume-shadow: 0 26px 68px rgb(0 0 0 / 0.65), 0 2px 10px rgb(0 0 0 / 0.4);
+  --resume-tab-bg: #1b1b1b;
+}
+
+.resume-dialog:modal {
+  overscroll-behavior: contain;
+}
+
+.resume-dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgb(255 255 255 / 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition-property: background-color, backdrop-filter, display, overlay;
+  transition-duration: 240ms;
+  transition-timing-function: ease-out;
+  transition-behavior: allow-discrete;
+}
+
+.resume-dialog[open]:where(:not([data-closing])) {
+  opacity: 1;
+
+  @starting-style {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(0) scale(1);
+
+    @starting-style {
+      transform: translateY(14px) scale(0.97);
+    }
+  }
+
+  &::backdrop {
+    background-color: rgb(255 255 255 / 0.78);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+
+    @starting-style {
+      background-color: rgb(255 255 255 / 0);
+      backdrop-filter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+    }
+  }
+}
+
+body.dark-mode .resume-dialog[open]:where(:not([data-closing]))::backdrop {
+  background-color: rgb(10 10 10 / 0.82);
+
+  @starting-style {
+    background-color: rgb(10 10 10 / 0);
+  }
+}
+
+.resume-stage {
+  position: relative;
+  width: min(520px, calc(100vw - 36px));
+}
+
+/* Subtle stacked paper copies underneath */
+.resume-stack-back,
+.resume-stack-mid {
+  position: absolute;
+  inset: 0;
+  background: var(--resume-paper-stack);
+  border: 1px solid var(--resume-border);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.resume-stack-back {
+  transform: translate(-5px, 5px) rotate(-0.6deg);
+  opacity: 0.7;
+}
+
+.resume-stack-mid {
+  transform: translate(4px, 3px) rotate(0.4deg);
+  opacity: 0.88;
+}
+
+.resume-sheet {
+  position: relative;
+  z-index: 1;
+  background: var(--resume-paper);
+  border: 1px solid var(--resume-border);
+  border-radius: 2px;
+  box-shadow: var(--resume-shadow);
+  transition: filter 220ms ease, opacity 220ms ease;
+}
+
+.resume-sheet.is-underneath {
+  filter: blur(1.4px);
+  opacity: 0.92;
+}
+
+/* Whisper-subtle horizontal trifold crease lines at 1/3 and 2/3 */
+.resume-sheet::before,
+.resume-sheet::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--resume-crease) 8%,
+    var(--resume-crease) 92%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+.resume-sheet::before {
+  top: 33.333%;
+}
+
+.resume-sheet::after {
+  top: 66.666%;
+}
+
+.resume-sheet-inner {
+  padding: 26px 28px 24px;
+  max-height: calc(100dvh - 84px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+/* Top-right monochrome paperclip "take a copy" tab */
+.resume-copy-tab {
+  position: absolute;
+  top: -10px;
+  right: 18px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-block-size: 32px;
+  padding: 6px 11px 6px 9px;
+  border: 1px solid var(--resume-border);
+  border-radius: 2px;
+  background: var(--resume-tab-bg);
+  color: var(--resume-ink);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+  transform: rotate(1deg);
+  transition: transform 180ms ease, border-color 180ms ease, color 180ms ease, opacity 140ms ease, box-shadow 180ms ease;
+}
+
+.resume-copy-tab:hover {
+  border-color: var(--resume-accent);
+  color: var(--resume-accent);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.14);
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(-2px) rotate(0deg);
+  }
+}
+
+.resume-copy-tab:focus-visible {
+  outline: 1.5px solid var(--resume-accent);
+  outline-offset: 3px;
+}
+
+.resume-copy-tab.is-hidden-for-fold {
+  opacity: 0;
+  pointer-events: none;
+  @media (prefers-reduced-motion: no-preference) {
+    transform: translateY(-6px) scale(0.92);
+  }
+}
+
+.resume-clip-icon {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.resume-close {
+  position: absolute;
+  top: -34px;
+  right: 0;
+  z-index: 6;
+  min-width: 28px;
+  min-height: 28px;
+  padding: 2px 6px;
+  border: 1px solid var(--resume-border);
+  border-radius: 2px;
+  background: var(--resume-paper);
+  color: var(--resume-muted);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 150ms ease, border-color 150ms ease;
+}
+
+.resume-close:hover {
+  color: var(--resume-accent);
+  border-color: var(--resume-accent);
+}
+
+.resume-close:focus-visible {
+  outline: 1.5px solid var(--resume-accent);
+  outline-offset: 3px;
+}
+
+/* Resume document typography */
+.resume-doc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 12px;
+  padding-right: 112px;
+  border-bottom: 1px solid var(--resume-border);
+  margin-bottom: 13px;
+}
+
+.resume-doc-title {
+  margin: 0 0 3px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.resume-doc-role {
+  margin: 0;
+  font-size: 11px;
+  color: var(--resume-muted);
+}
+
+.resume-doc-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+  margin-top: 6px;
+  font-size: 10.5px;
+  color: var(--resume-muted);
+}
+
+.resume-doc-section {
+  margin-bottom: 12px;
+}
+
+.resume-doc-section:last-child {
+  margin-bottom: 0;
+}
+
+.resume-doc-heading {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--resume-subtle);
+}
+
+.resume-doc-heading span {
+  color: var(--resume-accent);
+}
+
+.resume-doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.resume-doc-row strong {
+  font-weight: 600;
+}
+
+.resume-doc-row span {
+  font-size: 10.5px;
+  color: var(--resume-subtle);
+  white-space: nowrap;
+}
+
+.resume-doc-note {
+  margin: 0 0 6px;
+  color: var(--resume-muted);
+  font-size: 11px;
+}
+
+.resume-doc-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.resume-doc-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.resume-doc-proj-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.resume-doc-proj-stack {
+  font-size: 10px;
+  color: var(--resume-subtle);
+}
+
+.resume-doc-proj-desc {
+  margin: 0;
+  color: var(--resume-muted);
+  font-size: 10.8px;
+}
+
+/* 3D Trifold Overlay (exact 3-panel letter fold + fly to browser download bar) */
+.resume-trifold {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  perspective: 1400px;
+}
+
+.trifold-packet {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  transition: transform 440ms cubic-bezier(0.32, 0, 0.18, 1), opacity 380ms ease-in;
+}
+
+.trifold-packet.is-flying {
+  transform: translate3d(34vw, -44vh, 0) rotate(11deg) scale(0.18);
+  opacity: 0;
+}
+
+.trifold-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 33.334%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.trifold-mid {
+  top: 33.333%;
+  z-index: 1;
+}
+
+.trifold-bot {
+  top: 66.666%;
+  z-index: 2;
+  transform-origin: top center;
+  transition: transform 320ms cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+.trifold-top {
+  top: 0;
+  z-index: 3;
+  transform-origin: bottom center;
+  transition: transform 320ms cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+.trifold-bot.is-folded {
+  transform: translateZ(1px) rotateX(178deg);
+}
+
+.trifold-top.is-folded {
+  transform: translateZ(2px) rotateX(-178deg);
+}
+
+.trifold-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  border-left: 1px solid var(--resume-border);
+  border-right: 1px solid var(--resume-border);
+  background: var(--resume-paper);
+}
+
+.trifold-top .trifold-front {
+  border-top: 1px solid var(--resume-border);
+}
+
+.trifold-bot .trifold-front {
+  border-bottom: 1px solid var(--resume-border);
+}
+
+.trifold-back {
+  transform: rotateX(180deg);
+  background: linear-gradient(180deg, var(--resume-paper-back) 0%, var(--resume-paper) 55%, var(--resume-paper-back) 100%);
+  border: 1px solid var(--resume-border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+}
+
+.trifold-slice {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+  color: var(--resume-ink);
+  background: var(--resume-paper);
+}
+
+.trifold-mid .trifold-slice {
+  transform: translateY(-33.333%);
+}
+
+.trifold-bot .trifold-slice {
+  transform: translateY(-66.666%);
+}
+
+@media (max-width: 600px) {
+  .resume-sheet-inner {
+    padding: 20px 18px 18px;
+    font-size: 11px;
+  }
+
+  .resume-doc-head {
+    padding-right: 0;
+    padding-top: 18px;
+  }
+
+  .resume-copy-tab {
+    top: -12px;
+    right: 12px;
+  }
+}
+
+@media (pointer: coarse) {
+  .resume-copy-tab,
+  .resume-close {
+    min-block-size: 44px;
+    min-inline-size: 44px;
+  }
+}

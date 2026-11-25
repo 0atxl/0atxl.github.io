@@ -259,6 +259,9 @@ export async function handleChat(
           question: current,
           history,
           notes,
+          onStatus(text) {
+            send('status', { text });
+          },
           onDelta(text) {
             send('delta', { text });
           }

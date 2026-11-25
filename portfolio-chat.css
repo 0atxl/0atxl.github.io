@@ -1,7 +1,7 @@
 :root {
   --portfolio-accent: #E5322D;
   --portfolio-scroll-thumb: #aaa;
-  --portfolio-motion: 600ms cubic-bezier(0.4, 0, 0.2, 1);
+  --portfolio-motion: 380ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :root:has(body.dark-mode) {
@@ -93,7 +93,8 @@ body.dark-mode :is(.portfolio-chat-panel, .portfolio-chat-launcher) {
 
 .portfolio-chat-panel[hidden],
 .portfolio-chat-launcher[hidden],
-.portfolio-chat-status[hidden] {
+.portfolio-chat-status[hidden],
+.portfolio-chat-clear[hidden] {
   display: none;
 }
 
@@ -121,15 +122,36 @@ html:is(.portfolio-chat-opening, .portfolio-chat-closing) .portfolio-chat-launch
   view-transition-name: portfolio-chat-launcher;
 }
 
-html:is(.portfolio-chat-opening, .portfolio-chat-closing)::view-transition-group(portfolio-content),
-html:is(.portfolio-chat-opening, .portfolio-chat-closing)::view-transition-group(portfolio-chat-panel),
-html:is(.portfolio-chat-opening, .portfolio-chat-closing)::view-transition-group(portfolio-chat-launcher) {
-  animation-duration: 600ms;
+html.portfolio-chat-opening::view-transition-group(portfolio-content),
+html.portfolio-chat-opening::view-transition-group(portfolio-chat-panel),
+html.portfolio-chat-opening::view-transition-group(portfolio-chat-launcher) {
+  animation-duration: 380ms;
   animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* On close: collapse the chat box FIRST, then glide the main resume content back to center. */
+html.portfolio-chat-closing::view-transition-group(portfolio-chat-panel) {
+  z-index: 2;
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.portfolio-chat-closing::view-transition-group(portfolio-content) {
+  animation-delay: 210ms;
+  animation-duration: 320ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+html.portfolio-chat-closing::view-transition-group(portfolio-chat-launcher) {
+  animation-delay: 220ms;
+  animation-duration: 240ms;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  animation-fill-mode: both;
+}
+
 html:is(.portfolio-chat-opening, .portfolio-chat-closing)::view-transition-group(portfolio-chat-panel) {
-  z-index: 1;
+  z-index: 2;
 }
 
 html:is(.portfolio-theme-dark, .portfolio-theme-light)::view-transition-old(root),
@@ -143,16 +165,24 @@ html:is(.portfolio-theme-dark, .portfolio-theme-light) :is(a, .theme-toggle) {
   transition: none !important;
 }
 
-html.portfolio-theme-dark::view-transition-old(root),
-html.portfolio-chat-closing::view-transition-old(portfolio-chat-panel) {
+html.portfolio-theme-dark::view-transition-old(root) {
   z-index: 1;
-  animation: portfolio-circle-reveal var(--portfolio-motion) reverse both;
+  animation: portfolio-circle-reveal 520ms cubic-bezier(0.4, 0, 0.2, 1) reverse both;
 }
 
-html.portfolio-theme-light::view-transition-new(root),
-html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
+html.portfolio-theme-light::view-transition-new(root) {
   z-index: 1;
-  animation: portfolio-circle-reveal var(--portfolio-motion) both;
+  animation: portfolio-circle-reveal 520ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+html.portfolio-chat-closing::view-transition-old(portfolio-chat-panel) {
+  z-index: 2;
+  animation: portfolio-circle-reveal 240ms cubic-bezier(0.4, 0, 0.2, 1) reverse both;
+}
+
+html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
+  z-index: 2;
+  animation: portfolio-circle-reveal 380ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 @keyframes portfolio-circle-reveal {
@@ -179,6 +209,12 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   font-weight: 700;
 }
 
+.portfolio-chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .portfolio-chat-mark {
   color: var(--portfolio-accent);
   font-weight: 700;
@@ -193,6 +229,19 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   cursor: pointer;
 }
 
+.portfolio-chat-clear {
+  min-block-size: 26px;
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  color: var(--chat-muted) !important;
+  border-radius: 3px;
+  transition: color 0.15s ease;
+}
+
+.portfolio-chat-clear:hover {
+  color: var(--portfolio-accent) !important;
+}
+
 .portfolio-chat-close {
   min-width: 28px;
   min-height: 28px;
@@ -203,7 +252,7 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   cursor: default;
 }
 
-.portfolio-chat-panel :is(button, a, input):focus-visible,
+.portfolio-chat-panel :is(button, a):focus-visible,
 .portfolio-chat-launcher:focus-visible {
   outline: 1px solid var(--portfolio-accent);
   outline-offset: 3px;
@@ -223,8 +272,25 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
 }
 
 .portfolio-chat-intro,
-.portfolio-chat-status {
+.portfolio-chat-status,
+.portfolio-chat-tool-status {
   color: var(--chat-muted);
+}
+
+.portfolio-chat-tool-status {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.portfolio-chat-tool-status::before {
+  content: "•";
+  content: "•" / "";
+  color: var(--portfolio-accent);
+  @media (prefers-reduced-motion: no-preference) {
+    animation: portfolio-chat-blink 1s steps(2, start) infinite;
+  }
 }
 
 .portfolio-chat-suggestions {
@@ -260,17 +326,13 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   content: "▍" / "";
   margin-left: 2px;
   color: var(--portfolio-accent);
-  animation: portfolio-chat-blink 0.9s steps(2, start) infinite;
+  @media (prefers-reduced-motion: no-preference) {
+    animation: portfolio-chat-blink 0.9s steps(2, start) infinite;
+  }
 }
 
 @keyframes portfolio-chat-blink {
   to { visibility: hidden; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .portfolio-chat-streaming::after {
-    animation: none;
-  }
 }
 
 @media (pointer: coarse) {
@@ -283,6 +345,11 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
 .portfolio-chat-question {
   font-weight: 600;
   margin-top: 13px !important;
+}
+
+.portfolio-chat-question ~ .portfolio-chat-question {
+  padding-top: 11px;
+  border-top: 1px solid color-mix(in srgb, var(--chat-border) 55%, transparent);
 }
 
 .portfolio-chat-sources {
@@ -305,6 +372,13 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
 
 .portfolio-chat-form {
   border-top: 1px solid var(--chat-border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Clean high-contrast focus indicator on the form bar instead of a double box inside the input */
+.portfolio-chat-form:focus-within {
+  border-top-color: var(--portfolio-accent);
+  box-shadow: inset 0 1px 0 var(--portfolio-accent);
 }
 
 .portfolio-chat-form input {
@@ -316,6 +390,17 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   color: inherit;
   background: transparent;
   font: inherit;
+}
+
+.portfolio-chat-form input:focus {
+  outline: none;
+}
+
+@media (forced-colors: active) {
+  .portfolio-chat-form input:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
 }
 
 .portfolio-chat-form input::placeholder {
@@ -353,7 +438,7 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
     margin-top: 0;
   }
 
-  body.portfolio-chat-open .top-links a {
+  body.portfolio-chat-open .top-links :is(a, .top-link-btn) {
     display: none;
   }
 
@@ -392,6 +477,7 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   }
 
   .portfolio-chat-close,
+  .portfolio-chat-clear,
   .portfolio-chat-form button {
     min-width: 44px;
     min-height: 44px;

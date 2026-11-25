@@ -93,8 +93,15 @@
       .header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .header-identity {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
       }
 
       .header h1 {
@@ -102,6 +109,16 @@
         font-size: 1.45rem;
         font-weight: 700;
         line-height: 1.2;
+      }
+
+      .header-sub {
+        margin: 0;
+        font-size: 12px;
+        color: #777;
+      }
+
+      body.dark-mode .header-sub {
+        color: #888;
       }
 
       .header h1 .handle {
@@ -254,8 +271,21 @@
         color: #999;
       }
 
+      .project-stack {
+        margin: 0;
+        padding-left: 30px;
+        font-size: 11.5px;
+        color: #888;
+        letter-spacing: 0.01em;
+      }
+
+      body.dark-mode .project-stack {
+        color: #6f6f6f;
+      }
+
       @media (max-width: 600px) {
-        .project-desc {
+        .project-desc,
+        .project-stack {
           padding-left: 0;
         }
       }
@@ -267,22 +297,34 @@
         white-space: nowrap;
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 14px;
+        padding-top: 3px;
       }
 
-      .top-links a {
+      .top-links a,
+      .top-link-btn {
         text-decoration: none;
+      }
+
+      .top-link-btn {
+        background: none;
+        border: 0;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
       }
 
       a,
       .top-links a,
+      .top-link-btn,
       .links a,
       .theme-toggle {
         color: var(--text-color) !important;
         transition: color 0.8s ease !important;
       }
 
-      body.dark-mode .top-links a {
+      body.dark-mode .top-links a,
+      body.dark-mode .top-link-btn {
         color: #fff;
       }
 
@@ -405,7 +447,7 @@
         opacity: 0.8;
       }
 
-      a[data-scramble] {
+      [data-scramble] {
         display: inline-block;
         white-space: nowrap;
         letter-spacing: 0;
@@ -453,6 +495,22 @@
           cursor: none !important;
         }
 
+        input,
+        textarea {
+          cursor: text !important;
+        }
+
+        /* Top-layer <dialog> renders above #touch-cursor; restore crisp native pointers inside it */
+        dialog,
+        dialog *,
+        dialog::backdrop {
+          cursor: auto !important;
+        }
+
+        dialog :is(button, a) {
+          cursor: pointer !important;
+        }
+
         #touch-cursor {
           display: block;
           width: 16px;
@@ -497,8 +555,10 @@
       }
     </style>
 
-    <link rel="stylesheet" href="./portfolio-chat.css?v=3" />
-    <script type="module" src="./portfolio-chat.js?v=5"></script>
+    <link rel="stylesheet" href="./portfolio-chat.css?v=4" />
+    <link rel="stylesheet" href="./portfolio-resume.css?v=1" />
+    <script type="module" src="./portfolio-chat.js?v=6"></script>
+    <script type="module" src="./portfolio-resume.js?v=1"></script>
     <title>Atul Kumar</title>
   </head>
 
@@ -519,8 +579,18 @@
     <div id="touch-cursor"></div>
     <div id="maincontent">
       <div class="header">
-        <h1>Atul Kumar <span class="handle">/ 0atxl</span></h1>
+        <div class="header-identity">
+          <h1>Atul Kumar <span class="handle">/ 0atxl</span></h1>
+          <p class="header-sub">Final-year CS · Vadodara · Systems, AI &amp; Automation</p>
+        </div>
         <div class="top-links">
+          <button
+            id="resume-trigger"
+            class="top-link-btn"
+            type="button"
+            data-scramble="Resume"
+            aria-label="Resume"
+          >Resume</button>
           <a
             href="https://linkedin.com/in/0atxl"
             data-scramble="LinkedIn"
@@ -625,6 +695,7 @@
             </div>
           </div>
           <p class="project-desc">Encrypted paste sharing with automatic expiry and real-time collaboration.</p>
+          <p class="project-stack">Go · SQLite · React · Client-side encryption</p>
         </li>
 
         <li class="project-item">
@@ -650,6 +721,7 @@
             </div>
           </div>
           <p class="project-desc">Clinical-trial eligibility screening with an evidence trail for each match.</p>
+          <p class="project-stack">FastAPI · React · PostgreSQL · LangChain · Gemini</p>
         </li>
 
         <li class="project-item">
@@ -675,6 +747,7 @@
             </div>
           </div>
           <p class="project-desc">Multilingual voice assistant for reminders, email drafts, and sourced answers.</p>
+          <p class="project-stack">React · TypeScript · Go (Azure) · Deepgram · Groq</p>
         </li>
 
         <li class="project-item">
@@ -700,6 +773,7 @@
             </div>
           </div>
           <p class="project-desc">Interactive 3D CAD studio with a side-by-side AI inference benchmark.</p>
+          <p class="project-stack">Three.js · Structured CAD streaming · AI benchmarking</p>
         </li>
 
         <li class="project-item">
@@ -725,6 +799,7 @@
             </div>
           </div>
           <p class="project-desc">Courtroom-themed GitHub activity summaries and printable rap sheets.</p>
+          <p class="project-stack">GitHub API · Shareable printable cards</p>
         </li>
 
         <li class="project-item">
@@ -750,6 +825,7 @@
             </div>
           </div>
           <p class="project-desc">Native desktop notes that stay at the edge of the screen.</p>
+          <p class="project-stack">Native desktop utility</p>
         </li>
 
         <li class="project-item">
@@ -775,6 +851,7 @@
             </div>
           </div>
           <p class="project-desc">Simulates Solana payments and recovers the deposits from empty token accounts.</p>
+          <p class="project-stack">Solana Devnet · Transaction simulation</p>
         </li>
 
         <li class="project-item">
@@ -800,6 +877,7 @@
             </div>
           </div>
           <p class="project-desc">Linux file manager with a browser interface and an interactive demo.</p>
+          <p class="project-stack">Linux · Local filesystem · Web UI</p>
         </li>
 
         <li class="project-item">
@@ -818,6 +896,7 @@
             </div>
           </div>
           <p class="project-desc">Local-first practice for the GATE CS and DA exams.</p>
+          <p class="project-stack">Local-first web app · GATE CS &amp; DA</p>
         </li>
       </ul>
 
@@ -873,7 +952,7 @@
         >
       </div>
 
-      <div class="footer">Jan '26</div>
+      <div class="footer">Nov '26</div>
     </div>
 
     <button
@@ -894,7 +973,10 @@
     >
       <div class="portfolio-chat-header">
         <h2 id="portfolio-chat-title"><span class="portfolio-chat-mark" aria-hidden="true">/</span> Ask about my work</h2>
-        <button id="portfolio-chat-close" class="portfolio-chat-close" type="button" aria-label="Close chat">×</button>
+        <div class="portfolio-chat-actions">
+          <button id="portfolio-chat-clear" class="portfolio-chat-clear" type="button" hidden>Clear</button>
+          <button id="portfolio-chat-close" class="portfolio-chat-close" type="button" aria-label="Close chat">×</button>
+        </div>
       </div>
       <div id="portfolio-chat-log" class="portfolio-chat-log" role="log" aria-label="Conversation">
         <p class="portfolio-chat-intro">Ask about a project, my background, or how to reach me.</p>
@@ -906,6 +988,101 @@
         <button id="portfolio-chat-send" type="submit">Send</button>
       </form>
     </aside>
+
+    <dialog
+      id="resume-dialog"
+      class="resume-dialog"
+      closedby="any"
+      aria-labelledby="resume-dialog-title"
+      data-resume-href="./resume.pdf"
+      data-resume-filename="Atul-Kumar-Resume.pdf"
+    >
+      <div id="resume-stage" class="resume-stage">
+        <button id="resume-close" class="resume-close" type="button" aria-label="Close resume">×</button>
+        <div class="resume-stack-back" aria-hidden="true"></div>
+        <div class="resume-stack-mid" aria-hidden="true"></div>
+        <button id="resume-copy-tab" class="resume-copy-tab" type="button" autofocus>
+          <svg class="resume-clip-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+          <span class="resume-copy-label">take a copy</span>
+        </button>
+
+        <article id="resume-sheet" class="resume-sheet">
+          <div id="resume-sheet-inner" class="resume-sheet-inner">
+            <header class="resume-doc-head">
+              <div>
+                <h1 id="resume-dialog-title" class="resume-doc-title">Atul Kumar</h1>
+                <p class="resume-doc-role">Computer Science Engineering · Systems, AI &amp; Automation</p>
+                <div class="resume-doc-meta">
+                  <span>hello@atulk.me</span>
+                  <span>atulk.me</span>
+                  <span>github.com/0atxl</span>
+                  <span>linkedin.com/in/0atxl</span>
+                </div>
+              </div>
+            </header>
+
+            <section class="resume-doc-section">
+              <h2 class="resume-doc-heading"><span>/</span> Education</h2>
+              <div class="resume-doc-row">
+                <strong>Computer Science Engineering (Final Year)</strong>
+                <span>Vadodara, India</span>
+              </div>
+              <p class="resume-doc-note">Focus on systems, applied AI/ML, automation, and applied mathematics. Grew up in Rourkela.</p>
+            </section>
+
+            <section class="resume-doc-section">
+              <h2 class="resume-doc-heading"><span>/</span> Selected Projects</h2>
+              <ul class="resume-doc-list">
+                <li>
+                  <div class="resume-doc-proj-head">
+                    <strong>0xbin</strong>
+                    <span class="resume-doc-proj-stack">Go · SQLite · React</span>
+                  </div>
+                  <p class="resume-doc-proj-desc">Open-source encrypted paste sharing with auto-expiry, burn-after-read, and real-time collaboration.</p>
+                </li>
+                <li>
+                  <div class="resume-doc-proj-head">
+                    <strong>TrialSync</strong>
+                    <span class="resume-doc-proj-stack">FastAPI · React · PostgreSQL · LangChain · Gemini</span>
+                  </div>
+                  <p class="resume-doc-proj-desc">Clinical-trial patient eligibility screening producing structured summaries with criterion-level evidence trails.</p>
+                </li>
+                <li>
+                  <div class="resume-doc-proj-head">
+                    <strong>Morning</strong>
+                    <span class="resume-doc-proj-stack">React · TS · Go (Azure) · Deepgram · Groq · MCP</span>
+                  </div>
+                  <p class="resume-doc-proj-desc">Multilingual browser voice assistant for reminders, editable email drafts, and sourced read-only lookups.</p>
+                </li>
+                <li>
+                  <div class="resume-doc-proj-head">
+                    <strong>ClawForge</strong>
+                    <span class="resume-doc-proj-stack">Three.js · CAD Streaming · AI Benchmark</span>
+                  </div>
+                  <p class="resume-doc-proj-desc">Interactive 3D CAD studio with exploded views, cutaways, and side-by-side inference throughput benchmarking.</p>
+                </li>
+                <li>
+                  <div class="resume-doc-proj-head">
+                    <strong>apsis · Frost · Subpoena · Stickies · DOOR</strong>
+                    <span class="resume-doc-proj-stack">Solana · Linux · Web · Desktop</span>
+                  </div>
+                  <p class="resume-doc-proj-desc">Solana payment simulator with rent recovery, Linux browser file manager, GitHub rap sheets, desktop notes, and GATE prep.</p>
+                </li>
+              </ul>
+            </section>
+
+            <section class="resume-doc-section">
+              <h2 class="resume-doc-heading"><span>/</span> Stack &amp; Problem Solving</h2>
+              <p class="resume-doc-note"><strong>Languages:</strong> Python, C++, TypeScript, Java, Go</p>
+              <p class="resume-doc-note"><strong>Systems &amp; AI:</strong> PyTorch, NLP, healthcare &amp; energy ML, FastAPI, React, PostgreSQL, Docker, Vercel, DevOps, System Design</p>
+              <p class="resume-doc-note"><strong>Competitive Programming:</strong> 500+ algorithmic problems solved across Codeforces, CodeChef, LeetCode, and HackerRank.</p>
+            </section>
+          </div>
+        </article>
+      </div>
+    </dialog>
 
     <script>
       const savedTheme = localStorage.getItem("theme");
@@ -1131,7 +1308,7 @@
       }
 
       function attachOvalDoodles() {
-        const targets = document.querySelectorAll("a[data-scramble], .theme-toggle");
+        const targets = document.querySelectorAll("[data-scramble], .theme-toggle");
         targets.forEach((el, index) => {
           let svg = el.querySelector(".oval-doodle");
           if (!svg) {
@@ -1253,18 +1430,33 @@
         touchCursor.style.opacity = "1";
       });
 
-      // Red circle enlargement on interactive hover
-      document.querySelectorAll("a, button, [data-scramble]").forEach((el) => {
-        el.addEventListener("mouseenter", () => {
-          isHovering = true;
-          touchCursor.classList.add("hovering");
+      // Red circle enlargement on interactive hover (delegated for dynamic chat/dialog controls)
+      // and hide custom circle over text inputs so the native I-beam caret stays unobstructed.
+      let cursorOverInput = false;
+
+      document.addEventListener("mouseover", (e) => {
+        const target = e.target;
+        if (!(target instanceof Element)) return;
+        const hideCustom = Boolean(target.closest("input, textarea, dialog"));
+        if (hideCustom !== cursorOverInput) {
+          cursorOverInput = hideCustom;
+          touchCursor.style.opacity = cursorOverInput ? "0" : "1";
+        }
+        const interactive = !cursorOverInput && Boolean(target.closest("a, button, [data-scramble]"));
+        if (interactive !== isHovering) {
+          isHovering = interactive;
+          touchCursor.classList.toggle("hovering", isHovering);
           updateCursorPosition();
-        });
-        el.addEventListener("mouseleave", () => {
+        }
+      });
+
+      document.addEventListener("mouseout", (e) => {
+        if (!e.relatedTarget) {
+          cursorOverInput = false;
           isHovering = false;
           touchCursor.classList.remove("hovering");
-          updateCursorPosition();
-        });
+          touchCursor.style.opacity = "0";
+        }
       });
     </script>
   </body>

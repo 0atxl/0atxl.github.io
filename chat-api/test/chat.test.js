@@ -8,9 +8,11 @@ import {
 } from '../lib/knowledge.js';
 import {
   createSourceMarkerFilter,
+  executeRepoTool,
   generateWithFailover,
   reasoningEffortFor,
-  resolveAzureChatUrl
+  resolveAzureChatUrl,
+  sanitizeRepoPath
 } from '../lib/providers.js';
 import { createMemoryStore, handleChat } from '../lib/handler.js';
 
@@ -292,4 +294,82 @@ test('handler: SSE streaming, warm LRU cache, curated fallback, and rate limitin
 
 test('knowledge: normalizeCacheKey collapses punctuation and case', () => {
   assert.equal(normalizeCacheKey("What is Atul's tech stack?!"), 'what is atul s tech stack');
+});
+
+test('agent tools: sanitizeRepoPath blocks traversal and executeRepoTool enforces allowlist', async () => {
+  assert.equal(sanitizeRepoPath('README.md'), 'README.md');
+  assert.equal(sanitizeRepoPath('cmd/server/main.go'), 'cmd/server/main.go');
+  assert.equal(sanitizeRepoPath('../secret'), null);
+  assert.equal(sanitizeRepoPath('foo//bar'), null);
+  assert.equal(sanitizeRepoPath('https://evil.com/x'), null);
+
+  const disallowed = await executeRepoTool('read_repo_file', { projectId: 'evil', path: 'README.md' }, {
+    fetchImpl: async () => { throw new Error('should not fetch'); },
+    useCache: false
+  });
+  assert.ok(disallowed.includes('not an allowlisted'));
+
+  const fetchedUrls = [];
+  const license = await executeRepoTool('read_repo_file', { projectId: '0xbin', path: 'LICENSE' }, {
+    fetchImpl: async (url) => {
+      fetchedUrls.push(url);
+      return new Response('MIT License\nCopyright Atul Kumar', { status: 200 });
+    },
+    useCache: false
+  });
+  assert.equal(fetchedUrls[0], 'https://raw.githubusercontent.com/0atxl/0xbin/HEAD/LICENSE');
+  assert.ok(license.includes('MIT License'));
+  assert.ok(license.includes('<fetched_repo_data'));
+});
+
+test('agent loop: Azure gpt-6-luna emits tool call, reads repo file, reports live status, then streams final answer', async () => {
+  let azureRound = 0;
+  const statuses = [];
+  const deltas = [];
+
+  const fetchImpl = async (url, init) => {
+    if (url.includes('raw.githubusercontent.com/0atxl/0xbin/HEAD/LICENSE')) {
+      return new Response('MIT License\nPermission is hereby granted, free of charge...', { status: 200 });
+    }
+    if (url.includes('azure.com')) {
+      azureRound++;
+      const reqBody = JSON.parse(init.body);
+      if (azureRound === 1) {
+        assert.ok(Array.isArray(reqBody.tools) && reqBody.tools.length === 2);
+        return sseResponse([
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"read_repo_file","arguments":"{\\"projectId\\":\\"0xbin\\","}}]}}]}\n\n',
+          'data: {"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\\"path\\":\\"LICENSE\\"}"}}]},"finish_reason":"tool_calls"}]}\n\n',
+          'data: [DONE]\n\n'
+        ]);
+      }
+      // Second pass must include the tool result message
+      assert.ok(reqBody.messages.some((m) => m.role === 'tool' && m.content.includes('MIT License')));
+      return sseResponse([
+        'data: {"choices":[{"delta":{"content":"Yes, 0xbin is free and open-source under the MIT License.\\n[[SOURCES: 0xbin]]"},"finish_reason":"stop"}]}\n\n',
+        'data: [DONE]\n\n'
+      ]);
+    }
+    throw new Error(`Unexpected URL: ${url}`);
+  };
+
+  const result = await generateWithFailover({
+    question: 'Is 0xbin free to use and what license does it have?',
+    notes: retrieveDocuments('Is 0xbin free to use?'),
+    onStatus: (s) => statuses.push(s),
+    onDelta: (d) => deltas.push(d),
+    env: {
+      AZURE_OPENAI_ENDPOINT: 'https://secbrainwillow.openai.azure.com',
+      AZURE_OPENAI_API_KEY: 'test-key',
+      AZURE_OPENAI_DEPLOYMENT: 'gpt-6-luna'
+    },
+    fetchImpl,
+    retryDelayMs: 5,
+    logger: { warn() {} }
+  });
+
+  assert.equal(azureRound, 2);
+  assert.equal(result.toolsUsed, 1);
+  assert.equal(statuses[0], 'Reading 0xbin/LICENSE…');
+  assert.equal(deltas.join(''), 'Yes, 0xbin is free and open-source under the MIT License.');
+  assert.deepEqual(result.sourceIds, ['0xbin']);
 });
