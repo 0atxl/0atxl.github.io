@@ -2,8 +2,8 @@
   "name": "atulk-portfolio-chat",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": "22.x"
+  "scripts": {
+    "test": "node --test test/*.test.js"
   },
   "dependencies": {
     "zod": "4.6.7"

@@ -227,6 +227,59 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   color: var(--chat-muted);
 }
 
+.portfolio-chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 12px;
+}
+
+.portfolio-chat-panel .portfolio-chat-chip {
+  min-block-size: 28px;
+  padding: 4px 9px;
+  border: 1px solid var(--chat-border);
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: inherit;
+  background: transparent;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.portfolio-chat-panel .portfolio-chat-chip:hover {
+  border-color: var(--portfolio-accent);
+  color: var(--portfolio-accent);
+}
+
+.portfolio-chat-answer {
+  margin-bottom: 4px;
+}
+
+.portfolio-chat-streaming::after {
+  content: "▍";
+  content: "▍" / "";
+  margin-left: 2px;
+  color: var(--portfolio-accent);
+  animation: portfolio-chat-blink 0.9s steps(2, start) infinite;
+}
+
+@keyframes portfolio-chat-blink {
+  to { visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-chat-streaming::after {
+    animation: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .portfolio-chat-panel .portfolio-chat-chip {
+    min-block-size: 44px;
+    padding: 8px 12px;
+  }
+}
+
 .portfolio-chat-question {
   font-weight: 600;
   margin-top: 13px !important;
