@@ -3,7 +3,7 @@ import {
   matchFastPath,
   normalizeCacheKey,
   starterPrompts
-} from './chat-api/lib/knowledge.js?v=7';
+} from './chat-api/lib/knowledge.js?v=8';
 
 const launcher = document.querySelector('#portfolio-chat-launcher');
 const panel = document.querySelector('#portfolio-chat');
@@ -629,6 +629,7 @@ async function askQuestion(rawQuestion) {
     if (answer.action) {
       handleAnswerAction(answer);
     } else if (Array.isArray(answer.sourceIds) && answer.sourceIds.includes('contact')) {
+      messageFlow.step = 'offer';
       appendInlineActions([
         {
           label: 'Message Atul directly',

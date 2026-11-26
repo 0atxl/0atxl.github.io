@@ -392,10 +392,10 @@ export function matchFastPath(question, history = []) {
 
   // 3a. Direct intent to send Atul a message right away.
   if (
-    /^(message|dm|text|ping) (atul|him|you)$/.test(norm) ||
-    /^(send|leave|drop) (atul |him |me )?(a )?(direct )?(message|note|dm)( to (atul|him|you))?$/.test(norm) ||
-    /^(i want to|i d like to|id like to|can i|let me) (message|dm|send a message to|leave a message for) (atul|him|you)$/.test(norm) ||
-    /^(direct message|send message|leave message)$/.test(norm)
+    /^(message|msg|dm|text|txt|ping) (atul|him|hm|you)$/.test(norm) ||
+    /^(send|snd|leave|drop) (atul |him |hm |me )?(a )?(direct )?(message|msg|note|dm)( to (atul|him|hm|you))?$/.test(norm) ||
+    /^(i want to|i d like to|id like to|can i|let me) (message|msg|dm|send a message to|leave a message for) (atul|him|hm|you)$/.test(norm) ||
+    /^(direct message|send message|snd msg|leave message|msg)$/.test(norm)
   ) {
     return {
       paragraphs: [
