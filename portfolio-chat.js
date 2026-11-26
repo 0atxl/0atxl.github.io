@@ -429,7 +429,7 @@ async function sendDirectMessage(sender) {
 
     resetMessageFlow();
     renderFinalAnswer(box, {
-      paragraphs: ['Sent! Atul will see your message on Telegram shortly.'],
+      paragraphs: ['Sent! Atul will see your message shortly.'],
       sources: []
     });
   } catch (error) {
