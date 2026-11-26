@@ -200,7 +200,7 @@ export const portfolioIndexCard = [
 
 export const unknownAnswer = {
   paragraphs: [
-    'That isn’t covered in Atul’s public portfolio notes. You can ask about his projects, tech stack, engineering ethos, or how to reach him.'
+    'I don’t have that specific detail on Atul, though I’d be happy to share about his projects, tech stack, engineering ethos, or how to get in touch with him.'
   ],
   sources: [],
   sourceIds: []
@@ -501,7 +501,7 @@ export function buildFallbackAnswer(question, history = []) {
     return {
       ...unknownAnswer,
       mode: 'fallback',
-      notice: 'Live AI is temporarily unavailable; searched curated portfolio notes.'
+      notice: 'Quick reply while live AI reconnects.'
     };
   }
   return {
@@ -509,6 +509,6 @@ export function buildFallbackAnswer(question, history = []) {
     sources: citationsFor(docs),
     sourceIds: docs.map(({ id }) => id),
     mode: 'fallback',
-    notice: 'Live AI is temporarily unavailable. Showing curated portfolio notes.'
+    notice: 'Quick summary while live AI reconnects.'
   };
 }
