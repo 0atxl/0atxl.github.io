@@ -390,17 +390,39 @@ export function matchFastPath(question, history = []) {
   const named = findNamedEntries(cleaned);
   if (named.some(({ document }) => projectIds.has(document.id))) return null;
 
-  // 3. Direct contact / links lookup.
+  // 3a. Direct intent to send Atul a message right away.
+  if (
+    /^(message|dm|text|ping) (atul|him|you)$/.test(norm) ||
+    /^(send|leave|drop) (atul |him |me )?(a )?(direct )?(message|note|dm)( to (atul|him|you))?$/.test(norm) ||
+    /^(i want to|i d like to|id like to|can i|let me) (message|dm|send a message to|leave a message for) (atul|him|you)$/.test(norm) ||
+    /^(direct message|send message|leave message)$/.test(norm)
+  ) {
+    return {
+      paragraphs: [
+        'Sure — what would you like to send Atul? (Type cancel anytime to stop.)'
+      ],
+      sources: [],
+      sourceIds: [],
+      mode: 'fast',
+      action: 'start_message'
+    };
+  }
+
+  // 3b. Direct contact / links lookup (lists contacts and offers in-chat Telegram messaging).
   if (
     /^(contact|email|mail|reach out|github|linkedin|twitter|x|socials|social links)$/.test(norm) ||
-    /^(how (can|do) i (contact|reach|email|connect with|message) (atul|him|you)|what is (atul s|atuls|his|your) (email|github|linkedin|contact|x|twitter)|where can i find (atul|him|you))$/.test(norm)
+    /^(how (can|do) i (contact|reach|email|connect with|message|get in touch with) (atul|him|you)|what is (atul s|atuls|his|your) (email|github|linkedin|contact|x|twitter)|where can i find (atul|him|you))$/.test(norm)
   ) {
     const doc = notesById.get('contact');
     return {
-      paragraphs: [doc.text],
+      paragraphs: [
+        doc.text,
+        'You can also message him directly from here — would you like to?'
+      ],
       sources: citationsFor([doc]),
       sourceIds: [doc.id],
-      mode: 'fast'
+      mode: 'fast',
+      action: 'offer_message'
     };
   }
 

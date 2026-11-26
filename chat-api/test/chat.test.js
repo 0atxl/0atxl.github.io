@@ -15,6 +15,7 @@ import {
   sanitizeRepoPath
 } from '../lib/providers.js';
 import { createMemoryStore, handleChat } from '../lib/handler.js';
+import { formatTelegramMessage, handleMessage } from '../lib/message.js';
 
 function sseResponse(events, status = 200) {
   const encoder = new TextEncoder();
@@ -372,4 +373,98 @@ test('agent loop: Azure gpt-6-luna emits tool call, reads repo file, reports liv
   assert.equal(statuses[0], 'Reading 0xbin/LICENSE…');
   assert.equal(deltas.join(''), 'Yes, 0xbin is free and open-source under the MIT License.');
   assert.deepEqual(result.sourceIds, ['0xbin']);
+});
+
+function makeMessageRequest(body, {
+  origin = 'https://atulk.me',
+  method = 'POST',
+  ip = '203.0.113.42'
+} = {}) {
+  const headers = new Headers({
+    Origin: origin,
+    'x-forwarded-for': ip
+  });
+  const init = { method, headers };
+  if (method === 'POST') {
+    headers.set('Content-Type', 'application/json');
+    init.body = typeof body === 'string' ? body : JSON.stringify(body);
+  }
+  return new Request('https://atulk-portfolio-chat.vercel.app/api/message', init);
+}
+
+test('knowledge: contact fast-path offers direct messaging and direct message intent starts flow', () => {
+  const contact = matchFastPath('How can I reach him?');
+  assert.equal(contact?.mode, 'fast');
+  assert.equal(contact?.action, 'offer_message');
+  assert.ok(contact.paragraphs.some((p) => p.includes('message him directly')));
+  assert.ok(contact.sources.some((s) => s.url === 'mailto:hello@atulk.me'));
+
+  const direct = matchFastPath('I want to message Atul');
+  assert.equal(direct?.mode, 'fast');
+  assert.equal(direct?.action, 'start_message');
+});
+
+test('message API: delivers formatted message to Telegram, enforces CORS, honeypot, and rate limit', async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    calls.push({ url, body: JSON.parse(init.body) });
+    return Response.json({ ok: true, result: { message_id: 101 } });
+  };
+  const env = {
+    TELEGRAM_BOT_TOKEN: '12345:secret-token',
+    TELEGRAM_CHAT_ID: '987654321'
+  };
+  const store = createMemoryStore({ rateWindowMs: 60_000, rateMaxRequests: 2 });
+
+  // Disallowed origin is rejected.
+  const badOrigin = await handleMessage(
+    makeMessageRequest({ message: 'Hi Atul', sender: 'Riya' }, { origin: 'https://evil.example' }),
+    { fetchImpl, store, env, logger: { error() {} } }
+  );
+  assert.equal(badOrigin.status, 403);
+
+  // Honeypot silently succeeds without calling Telegram.
+  const bot = await handleMessage(
+    makeMessageRequest({ message: 'Buy crypto', sender: 'Spam', website: 'https://spam.invalid' }),
+    { fetchImpl, store, env, logger: { error() {} } }
+  );
+  assert.equal(bot.status, 200);
+  assert.equal(calls.length, 0);
+
+  // Valid message sends to Telegram.
+  const ok1 = await handleMessage(
+    makeMessageRequest({ message: 'Loved TrialSync! Are you open to internships?', sender: 'Riya (riya@example.com)' }),
+    { fetchImpl, store, env, logger: { error() {} } }
+  );
+  assert.equal(ok1.status, 200);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, 'https://api.telegram.org/bot12345:secret-token/sendMessage');
+  assert.equal(calls[0].body.chat_id, '987654321');
+  assert.equal(calls[0].body.disable_web_page_preview, true);
+  assert.ok(calls[0].body.text.includes('From: Riya (riya@example.com)'));
+  assert.ok(calls[0].body.text.includes('Loved TrialSync! Are you open to internships?'));
+
+  // Second message succeeds, third hits rate limit.
+  const ok2 = await handleMessage(
+    makeMessageRequest({ message: 'Second note', sender: 'Riya' }),
+    { fetchImpl, store, env, logger: { error() {} } }
+  );
+  assert.equal(ok2.status, 200);
+
+  const limited = await handleMessage(
+    makeMessageRequest({ message: 'Third note', sender: 'Riya' }),
+    { fetchImpl, store, env, logger: { error() {} } }
+  );
+  assert.equal(limited.status, 429);
+  assert.ok(Number(limited.headers.get('Retry-After')) >= 1);
+
+  // Missing Telegram config returns 503.
+  const unconfigured = await handleMessage(
+    makeMessageRequest({ message: 'Hello', sender: 'Riya' }, { ip: '203.0.113.99' }),
+    { fetchImpl, store, env: {}, logger: { error() {} } }
+  );
+  assert.equal(unconfigured.status, 503);
+
+  // Formatter strips null bytes cleanly.
+  assert.ok(formatTelegramMessage({ sender: 'Sam\0', message: 'Hi\0 there', origin: 'https://atulk.me' }).includes('From: Sam'));
 });

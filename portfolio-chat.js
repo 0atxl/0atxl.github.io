@@ -3,7 +3,7 @@ import {
   matchFastPath,
   normalizeCacheKey,
   starterPrompts
-} from './chat-api/lib/knowledge.js?v=6';
+} from './chat-api/lib/knowledge.js?v=7';
 
 const launcher = document.querySelector('#portfolio-chat-launcher');
 const panel = document.querySelector('#portfolio-chat');
@@ -17,14 +17,21 @@ const status = document.querySelector('#portfolio-chat-status');
 const phoneLayout = matchMedia('(max-width: 820px), (max-height: 520px) and (pointer: coarse)');
 const visualViewport = window.visualViewport;
 
-const CACHE_PREFIX = 'atulk-chat:v6:';
+const CACHE_PREFIX = 'atulk-chat:v7:';
 const CACHE_TTL_MS = 30 * 60 * 1000;
 const INTRO_TEXT = 'Ask about a project, my background, or how to reach me.';
+const DEFAULT_PLACEHOLDER = 'Ask a question...';
+const DEFAULT_MAX_LENGTH = 400;
+const YES_REPLY = /^(y|yes|yeah|yep|yup|sure|ok|okay|please|yes please|sure thing|go ahead|let'?s do it|do it|send a message|message him|message atul|i(?:'d| would) like to)\b/i;
+const NO_REPLY = /^(n|no|nah|nope|no thanks|not now|never\s*mind|cancel)\b/i;
+const CANCEL_REPLY = /^(cancel|stop|never\s*mind|exit|quit)$/i;
 const history = [];
 let chatOpen = false;
 let restingHeight = 0;
 let restingWidth = 0;
 let suggestionsEl = null;
+let activeInlineActionsEl = null;
+const messageFlow = { step: null, message: '' };
 
 function isScrolledNearEnd() {
   return log.scrollHeight - log.scrollTop - log.clientHeight < 24;
@@ -316,8 +323,237 @@ function renderStarterChips() {
   log.append(group);
 }
 
+function clearInlineActions() {
+  if (activeInlineActionsEl) {
+    activeInlineActionsEl.remove();
+    activeInlineActionsEl = null;
+  }
+}
+
+function resetMessageFlow() {
+  messageFlow.step = null;
+  messageFlow.message = '';
+  questionInput.placeholder = DEFAULT_PLACEHOLDER;
+  questionInput.maxLength = DEFAULT_MAX_LENGTH;
+  clearInlineActions();
+}
+
+function appendInlineActions(actions) {
+  clearInlineActions();
+  const group = document.createElement('div');
+  group.className = 'portfolio-chat-inline-actions';
+  group.setAttribute('role', 'group');
+  group.setAttribute('aria-label', 'Quick replies');
+
+  for (const action of actions) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'portfolio-chat-chip';
+    btn.textContent = action.label;
+    btn.addEventListener('click', () => {
+      if (submit.disabled) return;
+      action.onClick();
+    });
+    group.append(btn);
+  }
+
+  activeInlineActionsEl = group;
+  log.append(group);
+  log.scrollTop = log.scrollHeight;
+}
+
+function replyLocal(paragraphs, sources = []) {
+  const box = createAnswerContainer();
+  renderFinalAnswer(box, { paragraphs, sources });
+  return box;
+}
+
+function enterMessageStep({ promptBot = true } = {}) {
+  messageFlow.step = 'message';
+  messageFlow.message = '';
+  questionInput.placeholder = 'Type your message for Atul...';
+  questionInput.maxLength = 1000;
+  if (promptBot) {
+    replyLocal(['Sure — what would you like to send Atul? (Type cancel anytime to stop.)']);
+  }
+  appendInlineActions([
+    {
+      label: 'Cancel',
+      onClick: () => {
+        showQuestion('Cancel');
+        resetMessageFlow();
+        replyLocal(['Message cancelled. Ask me anything else about Atul.']);
+      }
+    }
+  ]);
+  questionInput.focus({ preventScroll: true });
+}
+
+function getMessageEndpoint() {
+  if (panel.dataset.messageEndpoint) return panel.dataset.messageEndpoint;
+  const chatEndpoint = panel.dataset.endpoint;
+  if (!chatEndpoint) return '';
+  return chatEndpoint.replace(/\/api\/chat\/?$/, '/api/message');
+}
+
+async function sendDirectMessage(sender) {
+  const endpoint = getMessageEndpoint();
+  const fallbackSources = [{ title: 'Email', url: 'mailto:hello@atulk.me' }];
+  if (!endpoint) {
+    resetMessageFlow();
+    replyLocal(['Direct messaging isn’t configured right now. You can email hello@atulk.me instead.'], fallbackSources);
+    return;
+  }
+
+  submit.disabled = true;
+  log.setAttribute('aria-busy', 'true');
+  const box = createAnswerContainer();
+  renderToolStatus(box, 'Sending to Atul...');
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: messageFlow.message,
+        sender
+      }),
+      credentials: 'omit',
+      signal: AbortSignal.timeout(12_000)
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(data?.error || 'Couldn’t deliver your message right now. You can email hello@atulk.me instead.');
+    }
+
+    resetMessageFlow();
+    renderFinalAnswer(box, {
+      paragraphs: ['Sent! Atul will see your message on Telegram shortly.'],
+      sources: []
+    });
+  } catch (error) {
+    resetMessageFlow();
+    renderFinalAnswer(box, {
+      paragraphs: [error?.message || 'Couldn’t deliver your message right now. You can email hello@atulk.me instead.'],
+      sources: fallbackSources
+    });
+  } finally {
+    log.removeAttribute('aria-busy');
+    submit.disabled = false;
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+async function handleMessageFlowInput(rawInput) {
+  const text = rawInput.trim();
+  if (!text) return true;
+
+  if (messageFlow.step === 'offer') {
+    clearInlineActions();
+    if (YES_REPLY.test(text)) {
+      showQuestion(text);
+      questionInput.value = '';
+      showStatus();
+      enterMessageStep();
+      return true;
+    }
+    if (NO_REPLY.test(text)) {
+      showQuestion(text);
+      questionInput.value = '';
+      showStatus();
+      resetMessageFlow();
+      replyLocal(['No problem — let me know if you want to ask anything else about Atul.']);
+      return true;
+    }
+    // User asked something else instead of answering yes/no — exit offer cleanly and continue normal chat.
+    resetMessageFlow();
+    return false;
+  }
+
+  if (messageFlow.step === 'message') {
+    clearInlineActions();
+    showQuestion(text);
+    questionInput.value = '';
+    showStatus();
+
+    if (CANCEL_REPLY.test(text)) {
+      resetMessageFlow();
+      replyLocal(['Message cancelled. Ask me anything else about Atul.']);
+      return true;
+    }
+    if (text.length < 2) {
+      replyLocal(['Could you write a bit more for your message? (Or type cancel to stop.)']);
+      return true;
+    }
+
+    messageFlow.message = text;
+    messageFlow.step = 'name';
+    questionInput.placeholder = 'Your name (and optional email / @handle)...';
+    questionInput.maxLength = 160;
+    replyLocal(['Got it. Who’s sending this? Share your name (and your email or handle if you’d like Atul to reply).']);
+    appendInlineActions([
+      {
+        label: 'Cancel',
+        onClick: () => {
+          showQuestion('Cancel');
+          resetMessageFlow();
+          replyLocal(['Message cancelled. Ask me anything else about Atul.']);
+        }
+      }
+    ]);
+    questionInput.focus({ preventScroll: true });
+    return true;
+  }
+
+  if (messageFlow.step === 'name') {
+    clearInlineActions();
+    showQuestion(text);
+    questionInput.value = '';
+    showStatus();
+
+    if (CANCEL_REPLY.test(text)) {
+      resetMessageFlow();
+      replyLocal(['Message cancelled. Ask me anything else about Atul.']);
+      return true;
+    }
+
+    await sendDirectMessage(text);
+    return true;
+  }
+
+  return false;
+}
+
+function handleAnswerAction(answer) {
+  if (answer?.action === 'offer_message') {
+    messageFlow.step = 'offer';
+    appendInlineActions([
+      {
+        label: 'Yes, message Atul',
+        onClick: () => {
+          showQuestion('Yes');
+          clearInlineActions();
+          enterMessageStep();
+        }
+      },
+      {
+        label: 'No thanks',
+        onClick: () => {
+          showQuestion('No thanks');
+          resetMessageFlow();
+          replyLocal(['No problem — let me know if you want to ask anything else about Atul.']);
+        }
+      }
+    ]);
+  } else if (answer?.action === 'start_message') {
+    enterMessageStep({ promptBot: false });
+  }
+}
+
 function clearChat() {
   if (submit.disabled) return;
+  resetMessageFlow();
   history.length = 0;
   suggestionsEl = null;
   log.replaceChildren();
@@ -335,10 +571,16 @@ async function askQuestion(rawQuestion) {
   const question = rawQuestion.trim();
   if (!question || submit.disabled) return;
 
+  if (messageFlow.step) {
+    const handled = await handleMessageFlowInput(question);
+    if (handled) return;
+  }
+
   if (suggestionsEl) {
     suggestionsEl.remove();
     suggestionsEl = null;
   }
+  clearInlineActions();
 
   showQuestion(question);
   questionInput.value = '';
@@ -351,6 +593,7 @@ async function askQuestion(rawQuestion) {
     const box = createAnswerContainer();
     renderFinalAnswer(box, fast);
     recordTurn(question, fast);
+    handleAnswerAction(fast);
     return;
   }
 
@@ -383,6 +626,20 @@ async function askQuestion(rawQuestion) {
     });
     renderFinalAnswer(box, answer);
     recordTurn(question, answer);
+    if (answer.action) {
+      handleAnswerAction(answer);
+    } else if (Array.isArray(answer.sourceIds) && answer.sourceIds.includes('contact')) {
+      appendInlineActions([
+        {
+          label: 'Message Atul directly',
+          onClick: () => {
+            showQuestion('Message Atul');
+            clearInlineActions();
+            enterMessageStep();
+          }
+        }
+      ]);
+    }
     if (cacheKey && answer.mode === 'ai') {
       writeClientCache(cacheKey, {
         paragraphs: answer.paragraphs,

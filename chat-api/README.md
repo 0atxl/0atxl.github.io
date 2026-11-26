@@ -15,3 +15,5 @@ Use `chat-api` as the Root Directory, the **Other** framework preset, and config
 * `AZURE_OPENAI_DEPLOYMENT` — defaults to `gpt-6-luna`
 * `AZURE_FALLBACK_DEPLOYMENT` *(optional)* — e.g. `gpt-5-nano`
 * `GOOGLE_GENERATIVE_AI_API_KEY` *(optional)* — secondary fallback to `gemini-3.5-flash-lite`
+* `TELEGRAM_BOT_TOKEN` — Telegram bot token from `@BotFather` for `/api/message` direct messages
+* `TELEGRAM_CHAT_ID` — your personal Telegram chat ID where portfolio messages are delivered

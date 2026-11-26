@@ -300,6 +300,13 @@ html.portfolio-chat-opening::view-transition-new(portfolio-chat-panel) {
   margin: 2px 0 12px;
 }
 
+.portfolio-chat-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 10px;
+}
+
 .portfolio-chat-panel .portfolio-chat-chip {
   min-block-size: 28px;
   padding: 4px 9px;
